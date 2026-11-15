@@ -58,8 +58,10 @@ def build_authorize_url(client_id: str, redirect_uri: str, state: str = None) ->
     return f"{STRAVA_AUTH_URL}?{params}"
 
 
-def exchange_code_for_tokens(client_id: str, client_secret: str, code: str) -> dict:
-    """Exchange a Strava authorization code for OAuth2 access and refresh tokens."""
+def exchange_code_for_tokens(
+    client_id: str, client_secret: str, code: str, user_id: str = None
+) -> dict:
+    """Exchange a Strava authorization code for OAuth2 access and refresh tokens for a user."""
     token_data = strava_post(
         STRAVA_TOKEN_URL,
         {
@@ -69,13 +71,13 @@ def exchange_code_for_tokens(client_id: str, client_secret: str, code: str) -> d
             "grant_type": "authorization_code",
         },
     )
-    save_tokens(token_data)
+    save_tokens(token_data, user_id=user_id)
     return token_data
 
 
-def get_valid_access_token() -> str:
-    """Return a valid Strava access token, refreshing it automatically if near expiry."""
-    tokens = load_tokens()
+def get_valid_access_token(user_id: str = None) -> str:
+    """Return a valid Strava access token for a user, refreshing it automatically if near expiry."""
+    tokens = load_tokens(user_id=user_id)
     if not tokens or "access_token" not in tokens:
         raise RuntimeError("Not authenticated with Strava.")
 
@@ -100,13 +102,13 @@ def get_valid_access_token() -> str:
     )
     if "athlete" in tokens and "athlete" not in refreshed:
         refreshed["athlete"] = tokens["athlete"]
-    save_tokens(refreshed)
+    save_tokens(refreshed, user_id=user_id)
     return refreshed["access_token"]
 
 
-def sync_strava_activities(days: int = 365) -> dict:
-    """Fetch Strava athlete activities from the last 12 months and update the local cache."""
-    access_token = get_valid_access_token()
+def sync_strava_activities(days: int = 365, user_id: str = None) -> dict:
+    """Fetch Strava athlete activities for a user and update their private cache."""
+    access_token = get_valid_access_token(user_id=user_id)
     now_utc = datetime.datetime.now(datetime.timezone.utc)
     after_epoch = int((now_utc - datetime.timedelta(days=days)).timestamp())
     all_activities = []
@@ -121,23 +123,24 @@ def sync_strava_activities(days: int = 365) -> dict:
             break
         page += 1
 
-    cache = load_cache()
+    cache = load_cache(user_id=user_id)
     cache["activities"] = all_activities
     cache["synced_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    save_cache(cache)
+    save_cache(cache, user_id=user_id)
     return cache
 
 
-def fetch_activity_detail(activity_id: str) -> dict:
-    """Fetch and cache full Strava activity details (laps & splits) by activity ID."""
-    cache = load_cache()
+def fetch_activity_detail(activity_id: str, user_id: str = None) -> dict:
+    """Fetch and cache Strava activity details (laps & splits) for a specific user."""
+    cache = load_cache(user_id=user_id)
     details = cache.setdefault("details", {})
     key = str(activity_id)
     if key in details:
         return details[key]
 
-    access_token = get_valid_access_token()
+    access_token = get_valid_access_token(user_id=user_id)
     detail = strava_get(f"{STRAVA_API_BASE}/activities/{key}", access_token)
     details[key] = detail
-    save_cache(cache)
+    save_cache(cache, user_id=user_id)
+    return detail
     return detail

@@ -45,9 +45,11 @@ class _SilentHandler(handler.DashboardHandler):
 def _dispatch_http(method: str, path: str, body: dict = None, headers: dict = None):
     raw_body = json.dumps(body).encode("utf-8") if body is not None else b""
     hdr_lines = [f"{method} {path} HTTP/1.1", "Host: 127.0.0.1:8501"]
+    effective_headers = {"Cookie": "shipshape_uid=test_suite_user"}
     if headers:
-        for k, v in headers.items():
-            hdr_lines.append(f"{k}: {v}")
+        effective_headers.update(headers)
+    for k, v in effective_headers.items():
+        hdr_lines.append(f"{k}: {v}")
     if body is not None:
         hdr_lines.append("Content-Type: application/json")
         hdr_lines.append(f"Content-Length: {len(raw_body)}")
@@ -65,7 +67,12 @@ def _dispatch_http(method: str, path: str, body: dict = None, headers: dict = No
     for line in head_lines[1:]:
         if ":" in line:
             k, v = line.split(":", 1)
-            resp_headers[k.strip().lower()] = v.strip()
+            key = k.strip().lower()
+            val = v.strip()
+            if key in resp_headers:
+                resp_headers[key] = f"{resp_headers[key]}, {val}"
+            else:
+                resp_headers[key] = val
     return status_code, resp_headers, resp_body
 
 
@@ -268,6 +275,64 @@ class PlansAndHandlerTests(unittest.TestCase):
             code, logout_hdrs, _ = _dispatch_http("POST", "/api/logout", {})
             self.assertEqual(code, 200)
             self.assertIn("Max-Age=0", logout_hdrs.get("set-cookie", ""))
+
+    def test_multi_user_isolation(self):
+        # User A and User B operate with separate session IDs
+        hdr_a = {"Cookie": "shipshape_uid=user_husband"}
+        hdr_b = {"Cookie": "shipshape_uid=user_wife"}
+
+        # Initial state for both users is completely blank and independent
+        _, _, body_a0 = _dispatch_http("GET", "/api/state", headers=hdr_a)
+        _, _, body_b0 = _dispatch_http("GET", "/api/state", headers=hdr_b)
+        self.assertFalse(json.loads(body_a0)["plan_uploaded"])
+        self.assertFalse(json.loads(body_b0)["plan_uploaded"])
+        self.assertFalse(json.loads(body_a0)["authenticated"])
+        self.assertFalse(json.loads(body_b0)["authenticated"])
+
+        # User A uploads Jane Doe plan
+        jane_url = "data:application/pdf;base64," + base64.b64encode(self.pdf_bytes).decode("ascii")
+        code_a, _, _ = _dispatch_http(
+            "POST", "/api/upload-plan", {"filename": "husband_jane.pdf", "data_url": jane_url}, headers=hdr_a
+        )
+        self.assertEqual(code_a, 200)
+
+        # User A now has Jane Doe plan; User B STILL sees NO plan
+        _, _, body_a1 = _dispatch_http("GET", "/api/state", headers=hdr_a)
+        _, _, body_b1 = _dispatch_http("GET", "/api/state", headers=hdr_b)
+        self.assertTrue(json.loads(body_a1)["plan_uploaded"])
+        self.assertEqual(json.loads(body_a1)["plan"]["metadata"]["athlete"], "Jane Doe")
+        self.assertFalse(json.loads(body_b1)["plan_uploaded"])
+        self.assertIsNone(json.loads(body_b1)["plan"])
+
+        # User B uploads John Doe plan
+        john_url = "data:application/pdf;base64," + base64.b64encode(JOHN_PDF.read_bytes()).decode("ascii")
+        code_b, _, _ = _dispatch_http(
+            "POST", "/api/upload-plan", {"filename": "wife_john.pdf", "data_url": john_url}, headers=hdr_b
+        )
+        self.assertEqual(code_b, 200)
+
+        # Verify both users have strictly their own plan
+        _, _, body_a2 = _dispatch_http("GET", "/api/state", headers=hdr_a)
+        _, _, body_b2 = _dispatch_http("GET", "/api/state", headers=hdr_b)
+        self.assertEqual(json.loads(body_a2)["plan"]["metadata"]["athlete"], "Jane Doe")
+        self.assertEqual(json.loads(body_b2)["plan"]["metadata"]["athlete"], "John Doe")
+
+        # User A authenticates with Strava tokens
+        storage.save_tokens({"access_token": "token_user_a", "athlete": {"firstname": "Husband"}}, user_id="user_husband")
+
+        # User A is authenticated; User B is NOT authenticated
+        _, _, body_a3 = _dispatch_http("GET", "/api/state", headers=hdr_a)
+        _, _, body_b3 = _dispatch_http("GET", "/api/state", headers=hdr_b)
+        self.assertTrue(json.loads(body_a3)["authenticated"])
+        self.assertEqual(json.loads(body_a3)["athlete"]["firstname"], "Husband")
+        self.assertFalse(json.loads(body_b3)["authenticated"])
+        self.assertIsNone(json.loads(body_b3)["athlete"])
+
+        # User A disconnects; does not affect User B
+        code_disc, _, _ = _dispatch_http("POST", "/api/disconnect", {}, headers=hdr_a)
+        self.assertEqual(code_disc, 200)
+        _, _, body_a4 = _dispatch_http("GET", "/api/state", headers=hdr_a)
+        self.assertFalse(json.loads(body_a4)["authenticated"])
 
 
 if __name__ == "__main__":
