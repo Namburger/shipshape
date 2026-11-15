@@ -1,0 +1,14 @@
+.env
+.strava_tokens.json
+.strava_cache.json
+data/.strava_tokens.json
+data/.strava_cache.json
+data/.app_state.json
+data/uploaded_plan.png
+data/uploaded_plan.pdf
+data/.server.pid
+data/server.log
+__pycache__/
+.venv/
+*.pyc
+.DS_Store

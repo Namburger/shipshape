@@ -1,0 +1,3700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Ship of Fools • Ship Shape Marathon Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23222222'/%3E%3Cpath d='M32 10 L46 21 L32 23 Z' fill='%23ca2017'/%3E%3Cpath d='M31 12 L31 41 L14 41 Z' fill='%23ffffff'/%3E%3Cpath d='M33 24 L49 41 L33 41 Z' fill='%23f1f5f9'/%3E%3Cpath d='M10 44 L54 44 L48 51 L16 51 Z' fill='%23ca2017'/%3E%3Cpath d='M12 55 Q22 51 32 55 T52 55' fill='none' stroke='%2338bdf8' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E" />
+  <script>
+    try {
+      if (localStorage.getItem("shipshape_theme") === "dark") {
+        document.documentElement.dataset.theme = "dark";
+      }
+    } catch (_) {}
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8f7f4;
+      --bg-elevated: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f3f1ec;
+      --border: #dad6ce;
+      --border-subtle: #ece9e2;
+      --text: #222222;
+      --text-muted: #5c5c5c;
+      --heading: #222222;
+      --brand: #ca2017;
+      --brand-hover: #a81912;
+      --brand-soft: rgba(202, 32, 23, 0.10);
+      --strava: #fc4c02;
+      --strava-hover: #e04300;
+      --strava-soft: rgba(252, 76, 2, 0.12);
+      --green: #15803d;
+      --green-soft: rgba(21, 128, 61, 0.12);
+      --amber: #b45309;
+      --amber-soft: rgba(180, 83, 9, 0.12);
+      --red: #b91c1c;
+      --red-soft: rgba(185, 28, 28, 0.10);
+      --blue: #0369a1;
+      --blue-soft: rgba(3, 105, 161, 0.11);
+      --badge-green-text: #15803d;
+      --badge-amber-text: #b45309;
+      --badge-red-text: #b91c1c;
+      --badge-blue-text: #0369a1;
+      --badge-brand-text: #ca2017;
+      --header-bg: rgba(255, 255, 255, 0.96);
+      --header-top: #222222;
+      --surface-subtle: #faf9f6;
+      --tab-track: #efede8;
+      --tab-active-bg: #ffffff;
+      --tab-active-text: #ca2017;
+      --tab-active-shadow: 0 1px 4px rgba(34, 34, 34, 0.12);
+      --current-week-bg: rgba(202, 32, 23, 0.045);
+      --actual-box-bg: #f5f4f0;
+      --day-run-bg: #ffffff;
+      --day-run-border: #dad6ce;
+      --day-run-divider: rgba(34, 34, 34, 0.14);
+      --pdf-thumb-bg: linear-gradient(180deg, rgba(202, 32, 23, 0.10), #ffffff);
+      --pdf-thumb-hover-bg: linear-gradient(180deg, rgba(202, 32, 23, 0.18), #ffffff);
+      --chart-grid: #e5e7eb;
+      --chart-zero: #9ca3af;
+      --chart-axis: #5c5c5c;
+      --chart-plan: #94a3b8;
+      --chart-bar-text: #222222;
+      --chart-highlight-bg: rgba(202, 32, 23, 0.06);
+      --chart-highlight-border: rgba(202, 32, 23, 0.4);
+      --chart-target: #64748b;
+      --chart-workout: #0369a1;
+      --chart-full: #fc4c02;
+      --dialog-shadow: 0 20px 45px -12px rgba(34, 34, 34, 0.28);
+      --backdrop-bg: rgba(34, 34, 34, 0.55);
+      --font-serif: Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, serif;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(34, 34, 34, 0.06);
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --bg-elevated: #111827;
+      --bg-card: #1e293b;
+      --bg-card-hover: #26354d;
+      --border: #334155;
+      --border-subtle: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --heading: #f8fafc;
+      --brand: #fc4c02;
+      --brand-hover: #e04300;
+      --brand-soft: rgba(252, 76, 2, 0.14);
+      --green: #10b981;
+      --green-soft: rgba(16, 185, 129, 0.15);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --red: #ef4444;
+      --red-soft: rgba(239, 68, 68, 0.15);
+      --blue: #38bdf8;
+      --blue-soft: rgba(56, 189, 248, 0.15);
+      --badge-green-text: #34d399;
+      --badge-amber-text: #fbbf24;
+      --badge-red-text: #f87171;
+      --badge-blue-text: #38bdf8;
+      --badge-brand-text: #fb923c;
+      --header-bg: rgba(17, 24, 39, 0.92);
+      --header-top: #fc4c02;
+      --surface-subtle: rgba(15, 23, 42, 0.75);
+      --tab-track: #111827;
+      --tab-active-bg: #1e293b;
+      --tab-active-text: #f8fafc;
+      --tab-active-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      --current-week-bg: rgba(252, 76, 2, 0.08);
+      --actual-box-bg: rgba(15, 23, 42, 0.65);
+      --day-run-bg: rgba(15, 23, 42, 0.65);
+      --day-run-border: rgba(51, 65, 85, 0.85);
+      --day-run-divider: rgba(148, 163, 184, 0.22);
+      --pdf-thumb-bg: linear-gradient(180deg, rgba(252, 76, 2, 0.16), rgba(15, 23, 42, 0.9));
+      --pdf-thumb-hover-bg: linear-gradient(180deg, rgba(252, 76, 2, 0.26), rgba(15, 23, 42, 0.95));
+      --chart-grid: #1e293b;
+      --chart-zero: #475569;
+      --chart-axis: #94a3b8;
+      --chart-plan: #334155;
+      --chart-bar-text: #f8fafc;
+      --chart-highlight-bg: rgba(252, 76, 2, 0.09);
+      --chart-highlight-border: rgba(252, 76, 2, 0.4);
+      --chart-target: #94a3b8;
+      --chart-workout: #38bdf8;
+      --chart-full: #fc4c02;
+      --dialog-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      --backdrop-bg: rgba(0, 0, 0, 0.75);
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 4rem;
+    }
+
+    a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 1.25rem;
+    }
+
+    header {
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-top: 5px solid var(--header-top);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding: 0.85rem 0;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .ship-logo {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(34, 34, 34, 0.18);
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 1.32rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--heading);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.5rem 0.95rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background: var(--bg-card-hover);
+      text-decoration: none;
+    }
+    .btn-strava {
+      background: var(--strava);
+      border-color: var(--strava);
+      color: #fff;
+    }
+    .btn-strava:hover {
+      background: var(--strava-hover);
+    }
+    .btn-theme-active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
+    }
+    .btn-theme-active:hover {
+      background: var(--brand-hover);
+    }
+
+    .athlete-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.82rem;
+    }
+    .athlete-pill img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+    }
+
+    /* Onboarding Gate */
+    .onboarding-wrap {
+      max-width: 960px;
+      margin: 3rem auto;
+    }
+
+    .onboarding-hero {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .onboarding-hero h1 {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--heading);
+      margin-bottom: 0.5rem;
+    }
+
+    .onboarding-hero p {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+      gap: 1.5rem;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.25rem;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s ease;
+    }
+
+    .step-card.completed {
+      border-color: var(--green);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.07), var(--bg-card));
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+    .step-card.completed .step-num {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+      background: var(--surface-subtle);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+    }
+
+    .uploaded-preview {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+    }
+    .uploaded-preview img {
+      width: 68px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .pdf-thumb {
+      width: 68px;
+      height: 84px;
+      border-radius: 8px;
+      border: 1px solid var(--chart-highlight-border);
+      background: var(--pdf-thumb-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      color: var(--text);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .pdf-thumb:hover {
+      border-color: var(--brand);
+      background: var(--pdf-thumb-hover-bg);
+    }
+
+    /* Equivalents Ribbon */
+    .equivalents-bar {
+      margin-top: 1rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+    .equiv-items {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .equiv-item span.label {
+      color: var(--text-muted);
+      margin-right: 0.35rem;
+    }
+    .equiv-item strong {
+      color: var(--text);
+    }
+    .equiv-item.goal strong {
+      color: var(--strava);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-top: 0.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--bg-elevated);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 0.65rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--strava), #ff7b3d);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Chart Section */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.75rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--heading);
+    }
+
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      display: inline-block;
+      margin-right: 0.35rem;
+    }
+
+    .chart-wrapper {
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+
+    /* Tabs & Controls */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab-group {
+      display: inline-flex;
+      background: var(--tab-track);
+      padding: 0.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 0.45rem 0.9rem;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--tab-active-bg);
+      color: var(--tab-active-text);
+      box-shadow: var(--tab-active-shadow);
+    }
+
+    /* Matrix Table */
+    .table-scroll {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+    }
+
+    table.plan-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1240px;
+      font-size: 0.82rem;
+    }
+
+    table.plan-matrix th {
+      background: #14532d;
+      color: #ecfdf5;
+      font-weight: 700;
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    table.plan-matrix td {
+      padding: 0.65rem 0.7rem;
+      border: 1px solid var(--border);
+      vertical-align: top;
+      background: var(--bg-card);
+    }
+
+    table.plan-matrix tr.current-week td {
+      background: var(--current-week-bg);
+      border-top: 2px solid var(--brand);
+      border-bottom: 2px solid var(--brand);
+    }
+
+    table.plan-matrix tr.past-week td {
+      background: var(--surface-subtle);
+    }
+
+    .cell-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cell-planned {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.45rem;
+      line-height: 1.35;
+    }
+    .cell-planned-note {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .actual-box {
+      margin-top: 0.35rem;
+      padding: 0.4rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      border-left: 3px solid var(--border);
+      background: var(--actual-box-bg);
+    }
+    .actual-box.hit {
+      border-left-color: var(--green);
+      background: var(--green-soft);
+    }
+    .actual-box.partial {
+      border-left-color: var(--amber);
+      background: var(--amber-soft);
+    }
+    .actual-box.missed {
+      border-left-color: var(--red);
+      background: var(--red-soft);
+    }
+    .actual-box.upcoming {
+      border-left-color: var(--border);
+      color: var(--text-muted);
+    }
+
+    .actual-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    details.day-runs-details {
+      margin-top: 0.35rem;
+      border-top: 1px solid var(--day-run-divider);
+      padding-top: 0.3rem;
+    }
+
+    summary.day-runs-summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      user-select: none;
+    }
+    summary.day-runs-summary::-webkit-details-marker {
+      display: none;
+    }
+    summary.day-runs-summary:hover {
+      color: var(--brand);
+    }
+
+    .day-runs-chevron {
+      display: inline-block;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+    details.day-runs-details[open] > summary.day-runs-summary .day-runs-chevron {
+      transform: rotate(90deg);
+      color: var(--brand);
+    }
+
+    .day-runs-summary-text {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .day-runs-list {
+      margin-top: 0.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .day-run-item {
+      padding: 0.35rem 0.45rem;
+      border-radius: 5px;
+      background: var(--day-run-bg);
+      border: 1px solid var(--day-run-border);
+      font-size: 0.72rem;
+    }
+
+    .day-run-title {
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .day-run-meta {
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+      font-size: 0.7rem;
+    }
+
+    .day-run-actions {
+      margin-top: 0.28rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge-green { background: var(--green-soft); color: var(--badge-green-text); }
+    .badge-amber { background: var(--amber-soft); color: var(--badge-amber-text); }
+    .badge-red { background: var(--red-soft); color: var(--badge-red-text); }
+    .badge-blue { background: var(--blue-soft); color: var(--badge-blue-text); }
+    .badge-strava { background: var(--brand-soft); color: var(--badge-brand-text); }
+
+    /* Week Focus Day Cards */
+    .week-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    select.week-select {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      max-width: 100%;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
+      gap: 1rem;
+    }
+
+    .day-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .day-card.today {
+      border: 2px solid var(--strava);
+    }
+
+    /* Dialogs */
+    dialog {
+      margin: auto;
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0;
+      max-width: min(1100px, 94vw);
+      max-height: 90vh;
+      box-shadow: var(--dialog-shadow);
+    }
+    dialog::backdrop {
+      background: var(--backdrop-bg);
+      backdrop-filter: blur(4px);
+    }
+    .dialog-header {
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--bg-elevated);
+    }
+    .dialog-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      max-height: calc(90vh - 65px);
+    }
+
+    .splits-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+    }
+    .splits-table th, .splits-table td {
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .splits-table th {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .mobile-scroll-hint {
+      display: none;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+      text-align: right;
+    }
+
+    .mobile-weeks-list {
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    details.mobile-week-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    details.mobile-week-card.current-week {
+      border: 2px solid var(--brand);
+      background: var(--current-week-bg);
+    }
+    details.mobile-week-card.past-week {
+      background: var(--surface-subtle);
+    }
+
+    summary.mobile-week-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 0.8rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    summary.mobile-week-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .mobile-week-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .mobile-week-right {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .mobile-week-chevron {
+      display: inline-block;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+    details.mobile-week-card[open] > summary .mobile-week-chevron {
+      transform: rotate(90deg);
+      color: var(--brand);
+    }
+
+    .mobile-week-body {
+      padding: 0 0.75rem 0.85rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .mobile-week-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding-top: 0.6rem;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .mobile-day-card {
+      background: var(--day-run-bg);
+      border: 1px solid var(--day-run-border);
+      border-radius: 9px;
+      padding: 0.65rem 0.75rem;
+    }
+
+    .plan-optional-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+      font-size: 0.85rem;
+    }
+    .plan-optional-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .plan-optional-copy span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .cal-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 0.85rem;
+    }
+    .cal-nav-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .cal-summary-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    table.cal-grid {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 960px;
+      table-layout: fixed;
+      font-size: 0.78rem;
+    }
+    table.cal-grid th {
+      background: var(--bg-elevated);
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      padding: 0.55rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    table.cal-grid td {
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 0.45rem 0.5rem;
+      vertical-align: top;
+      min-height: 112px;
+      height: 112px;
+      background: var(--bg-card);
+    }
+    table.cal-grid td:last-child {
+      border-right: none;
+      background: var(--surface-subtle);
+    }
+    table.cal-grid td.cal-out-month {
+      background: var(--surface-subtle);
+      opacity: 0.65;
+    }
+    table.cal-grid td.cal-today {
+      background: var(--current-week-bg);
+      box-shadow: inset 0 0 0 2px var(--brand);
+    }
+    .cal-day-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.25rem;
+      margin-bottom: 0.35rem;
+    }
+    .cal-day-num {
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .cal-plan-chip {
+      font-size: 0.7rem;
+      line-height: 1.3;
+      padding: 0.25rem 0.38rem;
+      border-radius: 5px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+    .cal-plan-chip-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.25rem;
+      margin-bottom: 0.15rem;
+    }
+    .cal-runs-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+    }
+    .cal-week-total {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .cal-week-miles {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--strava);
+    }
+
+    #calendarMobileList {
+      display: none;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 0.85rem;
+      }
+
+      header {
+        padding: 0.65rem 0;
+      }
+
+      .ship-logo {
+        width: 36px;
+        height: 36px;
+      }
+
+      .brand-title {
+        font-size: 1.04rem;
+        flex-wrap: wrap;
+      }
+
+      .brand-sub {
+        font-size: 0.75rem;
+      }
+
+      .header-controls {
+        width: 100%;
+        gap: 0.45rem;
+      }
+
+      .header-actions {
+        flex: 1 1 auto;
+        gap: 0.45rem;
+      }
+
+      .header-controls .btn,
+      .header-actions .athlete-pill {
+        font-size: 0.76rem;
+        padding: 0.38rem 0.65rem;
+      }
+
+      .onboarding-wrap {
+        margin: 1.5rem auto;
+      }
+
+      .onboarding-hero h1 {
+        font-size: 1.4rem;
+      }
+
+      .step-card {
+        padding: 1.15rem;
+      }
+
+      .equivalents-bar {
+        padding: 0.65rem 0.85rem;
+        gap: 0.5rem;
+      }
+
+      .equiv-items {
+        gap: 0.5rem 0.9rem;
+      }
+
+      .kpi-value {
+        font-size: 1.45rem;
+      }
+
+      .section-title {
+        font-size: 0.98rem;
+      }
+
+      .chart-wrapper {
+        padding: 0.75rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .mobile-scroll-hint {
+        display: block;
+      }
+
+      .tab-group {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 0.25rem;
+      }
+
+      .tab-btn {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.78rem;
+      }
+
+      #matrixDesktopWrap,
+      #calendarDesktopWrap {
+        display: none;
+      }
+
+      .mobile-weeks-list,
+      #calendarMobileList {
+        display: flex;
+      }
+
+      .cal-toolbar {
+        padding: 0.65rem 0.75rem;
+      }
+      .cal-nav-group {
+        width: 100%;
+      }
+      .cal-nav-group select.week-select {
+        flex: 1 1 140px;
+        width: auto;
+      }
+
+      select.week-select {
+        width: 100%;
+      }
+
+      dialog {
+        width: 96vw !important;
+        max-width: 96vw;
+        max-height: 92dvh;
+      }
+
+      .dialog-header {
+        padding: 0.75rem 0.9rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .dialog-body {
+        padding: 0.85rem;
+        max-height: calc(92dvh - 64px);
+      }
+
+      .splits-table th,
+      .splits-table td {
+        padding: 0.42rem 0.5rem;
+        font-size: 0.76rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <svg class="ship-logo" viewBox="0 0 64 64" role="img" aria-label="The Ship of Fools Logo">
+          <rect width="64" height="64" rx="14" fill="#222222"/>
+          <path d="M32 10 L46 21 L32 23 Z" fill="#ca2017"/>
+          <path d="M31 12 L31 41 L14 41 Z" fill="#ffffff"/>
+          <path d="M33 24 L49 41 L33 41 Z" fill="#e5e7eb"/>
+          <path d="M10 44 L54 44 L48 51 L16 51 Z" fill="#ca2017"/>
+          <path d="M12 55 Q22 51 32 55 T52 55" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="brand-title">
+            The Ship of Fools • Marathon Tracker
+            <span class="badge badge-strava" id="currentWeekBadge" style="display: none;">Week 14</span>
+          </div>
+          <div class="brand-sub" id="athleteSub">
+            Run Every Chance You Get! • Upload your Ship Shape PDF &amp; connect Strava
+          </div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="header-actions" id="headerActions"></div>
+        <button class="btn" id="btnDarkTheme" type="button" onclick="toggleTheme()" aria-pressed="false" title="Toggle Dark Theme">Dark Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hidden file input for uploading PDF -->
+  <input type="file" id="planFileInput" accept="application/pdf,.pdf" style="display: none;" />
+
+  <main class="container">
+    <!-- ONBOARDING GATE: Shown until Strava is connected -->
+    <section id="onboardingGate" class="onboarding-wrap" style="display: none;">
+      <div class="onboarding-hero">
+        <h1>Run Every Chance You Get!</h1>
+        <p>Connect your Strava account to view your runs on a calendar, or optionally add a Ship Shape training plan PDF for workout targets and adherence tracking.</p>
+      </div>
+
+      <div id="authErrorNotice" style="display:none; margin-bottom:1.25rem; padding:0.9rem 1.1rem; border-radius:10px; background:var(--red-soft); border:1px solid var(--red); color:var(--red);"></div>
+
+      <div class="steps-grid">
+        <!-- Step 1: Connect Strava Account (Required) -->
+        <div class="step-card" id="step2Card">
+          <div>
+            <div class="step-header">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <span class="step-num" id="step2Icon">1</span>
+                <h2 style="font-size:1.1rem; font-weight:700;">Connect Strava Account</h2>
+              </div>
+              <span class="badge badge-amber" id="step2Badge">Required</span>
+            </div>
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-top:0.6rem;">
+              Authorize read access to your Strava activities (last 12 months) to view your runs, paces, and splits on your calendar.
+            </p>
+          </div>
+
+          <div id="step2Body"></div>
+        </div>
+
+        <!-- Step 2: Upload Training Plan PDF (Optional) -->
+        <div class="step-card" id="step1Card">
+          <div>
+            <div class="step-header">
+              <div style="display:flex; align-items:center; gap:0.65rem;">
+                <span class="step-num" id="step1Icon">2</span>
+                <h2 style="font-size:1.1rem; font-weight:700;">Upload Training Plan PDF</h2>
+              </div>
+              <span class="badge badge-blue" id="step1Badge">Optional</span>
+            </div>
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-top:0.6rem;">
+              Optionally upload a Ship Shape training schedule PDF now (or later inside the dashboard) to unlock goal paces, adherence stats, and the 16-week matrix.
+            </p>
+          </div>
+
+          <div id="step1Body"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD CONTENT: Shown once Strava is connected (with or without a Training Plan PDF) -->
+    <div id="dashboardContent" style="display: none;">
+      <!-- Optional Plan Upsell Banner (shown when authenticated without a plan PDF) -->
+      <div class="plan-optional-banner" id="planOptionalBanner" style="display: none;">
+        <div class="plan-optional-copy">
+          <strong>📄 Showing your Strava runs without a training plan</strong>
+          <span>Upload a Ship Shape training plan PDF anytime to overlay planned workouts, target paces, adherence %, and the 16-week matrix.</span>
+        </div>
+        <button class="btn" type="button" onclick="document.getElementById('planFileInput').click()">
+          📤 Upload Training Plan PDF
+        </button>
+      </div>
+
+      <!-- Equivalent Race Performances from uploaded plan PDF -->
+      <div class="equivalents-bar" id="equivalentsBar" style="display: none;">
+        <div style="font-weight: 700; color: var(--text-muted);">
+          🎯 Ship Shape Target Equivalents:
+        </div>
+        <div class="equiv-items" id="equivItems">
+          <div class="equiv-item"><span class="label">5K:</span><strong>—</strong></div>
+          <div class="equiv-item"><span class="label">10K:</span><strong>—</strong></div>
+          <div class="equiv-item"><span class="label">Half Marathon:</span><strong>—</strong></div>
+          <div class="equiv-item goal"><span class="label">Marathon Goal:</span><strong>—</strong></div>
+          <div class="equiv-item"><span class="label">Easy Pace:</span><strong>—</strong></div>
+          <div class="equiv-item"><span class="label">Tempo Pace:</span><strong>—</strong></div>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <section class="kpi-grid">
+        <div class="card">
+          <div class="kpi-label">
+            <span id="kpi1Label">Current Week</span>
+            <span class="badge badge-strava" id="kpi1Badge">0%</span>
+          </div>
+          <div class="kpi-value" id="kpi1Value">0.0 mi</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="kpi1Bar" style="width: 0%;"></div>
+          </div>
+          <div class="kpi-sub" id="kpi1Sub">—</div>
+        </div>
+
+        <div class="card">
+          <div class="kpi-label">
+            <span id="kpi2Label">Mileage Summary</span>
+            <span class="badge badge-green" id="kpi2Badge">--</span>
+          </div>
+          <div class="kpi-value" id="kpi2Value">0.0 mi</div>
+          <div class="kpi-sub" id="kpi2Sub">—</div>
+        </div>
+
+        <div class="card">
+          <div class="kpi-label">
+            <span id="kpi3Label">3-Workout vs. Easy Split</span>
+            <span class="badge badge-blue" id="kpi3Badge">Tue/Thu/Sat vs Easy</span>
+          </div>
+          <div class="kpi-value" id="kpi3Value">0.0 / 0.0 mi</div>
+          <div class="kpi-sub" id="kpi3Sub">—</div>
+        </div>
+
+        <div class="card">
+          <div class="kpi-label">
+            <span id="kpi4Label">Average Pace</span>
+            <span class="badge badge-amber" id="kpi4Badge">Last 12 Months</span>
+          </div>
+          <div class="kpi-value" id="kpi4Value">--:-- /mi</div>
+          <div class="kpi-sub" id="kpi4Sub">—</div>
+        </div>
+      </section>
+
+      <!-- Weekly Mileage Progression Chart -->
+      <div class="section-header">
+        <div class="section-title" id="mileageSectionTitle">📈 Weekly Mileage Progression</div>
+        <div class="chart-legend" id="mileageChartLegend"></div>
+      </div>
+      <div class="card chart-wrapper">
+        <div id="mileageChartContainer" style="min-width: 820px; height: 230px;"></div>
+      </div>
+      <div class="mobile-scroll-hint">← Swipe horizontally to view all weeks →</div>
+
+      <!-- Pace Progression Line Chart -->
+      <div class="section-header">
+        <div class="section-title" id="paceSectionTitle">⏱️ Pace Progression</div>
+        <div class="chart-legend" id="paceChartLegend"></div>
+      </div>
+      <div class="card chart-wrapper">
+        <div id="paceChartContainer" style="min-width: 960px; height: 340px;"></div>
+      </div>
+      <div class="mobile-scroll-hint" id="paceScrollHint">← Swipe horizontally to view pace progression →</div>
+
+      <!-- Schedule View Switcher -->
+      <div class="controls-bar">
+        <div class="tab-group">
+          <button class="tab-btn active" data-view="calendar" id="tabCalendar">
+            📅 Monthly Calendar
+          </button>
+          <button class="tab-btn" data-view="matrix" id="tabMatrix" style="display: none;">
+            🗓️ 16-Week Plan Matrix
+          </button>
+          <button class="tab-btn" data-view="week" id="tabWeek">
+            🔍 Single Week Deep-Dive & Splits
+          </button>
+          <button class="tab-btn" data-view="activities" id="tabActivities">
+            🏃 All Synced Strava Activities
+          </button>
+        </div>
+
+        <div id="warmupToggleWrap" style="display: none; align-items: center; gap: 0.65rem;">
+          <label style="font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+            <input type="checkbox" id="chkIncludeWarmup" checked />
+            Show Tue/Thu totals with +2 mi Warmup/Cooldown
+          </label>
+        </div>
+      </div>
+
+      <!-- VIEW 1: Monthly Running Calendar (always available; overlays plan when uploaded) -->
+      <section id="viewCalendar">
+        <div class="cal-toolbar" id="calendarToolbar"></div>
+        <div class="table-scroll" id="calendarDesktopWrap">
+          <table class="cal-grid">
+            <thead>
+              <tr>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+                <th>Sun</th>
+                <th style="width: 118px;">Week Total</th>
+              </tr>
+            </thead>
+            <tbody id="calendarBody"></tbody>
+          </table>
+        </div>
+        <div id="calendarMobileList"></div>
+      </section>
+
+      <!-- VIEW 2: Full 16-Week Matrix (shown when a training plan PDF is uploaded) -->
+      <section id="viewMatrix" style="display: none;">
+        <div class="table-scroll" id="matrixDesktopWrap">
+          <table class="plan-matrix">
+            <thead>
+              <tr>
+                <th style="width: 58px;">WEEK#</th>
+                <th style="width: 95px;">WEEK OF<br/><span style="font-weight:400;font-size:0.68rem;">Starts Mon</span></th>
+                <th style="width: 13%;">Mon.<br/><span style="font-weight:400;font-size:0.68rem;">Easy Run</span></th>
+                <th style="width: 19%;">Tuesday - Speed Work<br/><span style="font-weight:400;font-size:0.68rem;">+1 mi WU, 1 mi CD (Easy)</span></th>
+                <th style="width: 13%;">Wed.<br/><span style="font-weight:400;font-size:0.68rem;">Easy Run</span></th>
+                <th style="width: 18%;">Thursday - Tempo/Hill<br/><span style="font-weight:400;font-size:0.68rem;">+1 mi WU, 1 mi CD (Easy)</span></th>
+                <th style="width: 17%;">Saturday - Long Run<br/><span style="font-weight:400;font-size:0.68rem;">(or Sun Long Run)</span></th>
+                <th style="width: 140px;">Weekly Miles<br/><span style="font-weight:400;font-size:0.68rem;">Plan vs. Strava</span></th>
+              </tr>
+            </thead>
+            <tbody id="matrixBody"></tbody>
+          </table>
+        </div>
+        <div class="mobile-weeks-list" id="mobileWeeksList"></div>
+      </section>
+
+      <!-- VIEW 3: Single Week Deep-Dive -->
+      <section id="viewWeek" style="display: none;">
+        <div class="week-selector-bar">
+          <label for="weekSelect" style="font-weight: 600; font-size: 0.9rem;">Select Week:</label>
+          <select id="weekSelect" class="week-select"></select>
+          <span id="weekFocusSummary" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+        </div>
+        <div class="days-grid" id="weekDaysGrid"></div>
+      </section>
+
+      <!-- VIEW 4: All Synced Strava Activities -->
+      <section id="viewActivities" style="display: none;">
+        <div class="card">
+          <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Synced Strava Activities (Last 12 Months)</h3>
+          <div class="table-scroll">
+            <table class="splits-table" id="allActivitiesTable">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Day</th>
+                  <th>Activity Name</th>
+                  <th>Type</th>
+                  <th>Distance</th>
+                  <th>Pace</th>
+                  <th>Moving Time</th>
+                  <th>Elevation</th>
+                  <th>Avg HR</th>
+                  <th>Splits</th>
+                </tr>
+              </thead>
+              <tbody id="allActivitiesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Dialog: Uploaded training plan PDF -->
+  <dialog id="planPdfDialog" style="width: min(1040px, 94vw);">
+    <div class="dialog-header">
+      <strong id="planDialogTitle">Uploaded Training Plan PDF</strong>
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <a class="btn" id="btnOpenPlanPdfNewTab" href="/api/plan-pdf" target="_blank" rel="noopener">↗ Open in New Tab</a>
+        <button class="btn" id="btnClosePlanPdf">✕ Close</button>
+      </div>
+    </div>
+    <div class="dialog-body" style="padding: 0.75rem;">
+      <iframe id="planModalFrame" src="/api/plan-pdf#view=FitH" title="Uploaded Marathon Training Schedule PDF" style="width: 100%; height: 76vh; border: 1px solid var(--border); border-radius: 8px; background: #fff;"></iframe>
+    </div>
+  </dialog>
+
+  <!-- Dialog: Activity Splits / Laps -->
+  <dialog id="activityDetailDialog">
+    <div class="dialog-header">
+      <strong id="detailDialogTitle">Activity Splits & Laps</strong>
+      <button class="btn" id="btnCloseDetailDialog">✕ Close</button>
+    </div>
+    <div class="dialog-body" id="detailDialogBody">
+      Loading splits...
+    </div>
+  </dialog>
+
+  <script>
+    const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    let appState = {
+      configured: false,
+      authenticated: false,
+      athlete: null,
+      synced_at: null,
+      activities: [],
+      plan_uploaded: false,
+      uploaded_filename: null,
+      uploaded_at: null,
+      plan: null,
+      includeWarmup: true,
+      activeTab: "calendar",
+      calendarMonth: "",
+      selectedWeekNumber: 14,
+      selectedWeekKey: null,
+      expandedDayKeys: new Set(),
+      expandedMobileWeeks: null,
+      expandedCalendarWeeks: null
+    };
+
+    function parseYMD(ymd) {
+      const [y, m, d] = ymd.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function formatYMD(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const d = String(dateObj.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function addDays(ymd, days) {
+      const dt = parseYMD(ymd);
+      dt.setDate(dt.getDate() + days);
+      return formatYMD(dt);
+    }
+
+    function formatShortDate(ymd) {
+      const dt = parseYMD(ymd);
+      return dt.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+
+    function metersToMiles(m) {
+      return (m || 0) / 1609.344;
+    }
+
+    function formatPaceFromSecPerMile(secPerMi) {
+      if (!secPerMi || !isFinite(secPerMi) || secPerMi <= 0) return "--:--";
+      const totalSec = Math.round(secPerMi);
+      const mins = Math.floor(totalSec / 60);
+      const secs = String(totalSec % 60).padStart(2, "0");
+      return `${mins}:${secs}`;
+    }
+
+    function formatDuration(sec) {
+      if (!sec) return "0m";
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = Math.round(sec % 60);
+      if (h > 0) return `${h}h ${m}m ${s}s`;
+      return `${m}m ${s}s`;
+    }
+
+    function getTodayYMD() {
+      return formatYMD(new Date());
+    }
+
+    function getMondayOfYMD(ymd) {
+      const dt = parseYMD(ymd);
+      const monOffset = (dt.getDay() + 6) % 7;
+      dt.setDate(dt.getDate() - monOffset);
+      return formatYMD(dt);
+    }
+
+    function getMonthLabel(ym) {
+      const [y, m] = ym.split("-").map(Number);
+      const dt = new Date(y, m - 1, 1);
+      return dt.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    }
+
+    function addMonthsYM(ym, delta) {
+      const [y, m] = ym.split("-").map(Number);
+      const dt = new Date(y, m - 1 + delta, 1);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function getActiveActivities() {
+      const raw = appState.activities || [];
+      return raw.filter(a => {
+        const t = (a.sport_type || a.type || "").toLowerCase();
+        return t.includes("run");
+      });
+    }
+
+    function groupRunsByDate(runs) {
+      const map = {};
+      for (const r of runs) {
+        const localIso = r.start_date_local || r.start_date || "";
+        const ymd = localIso.slice(0, 10);
+        if (!ymd) continue;
+        if (!map[ymd]) map[ymd] = [];
+        map[ymd].push(r);
+      }
+      return map;
+    }
+
+    function buildComparisonModel() {
+      if (!appState.plan) return null;
+      const runs = getActiveActivities();
+      const runsByDate = groupRunsByDate(runs);
+      const todayYMD = getTodayYMD();
+
+      const enrichedWeeks = appState.plan.weeks.map(week => {
+        const startYMD = week.week_of;
+        const endYMD = addDays(startYMD, 6);
+        const isCurrentWeek = todayYMD >= startYMD && todayYMD <= endYMD;
+        const isPastWeek = todayYMD > endYMD;
+
+        let actualTotalMiles = 0;
+        let actualWorkoutMiles = 0;
+        let actualEasyMiles = 0;
+        let plannedToDateMiles = 0;
+
+        const dayMap = {};
+        DAY_NAMES.forEach((dayName, idx) => {
+          const dateYMD = addDays(startYMD, idx);
+          const planned = week.days[dayName] || null;
+          const dayRuns = [...(runsByDate[dateYMD] || [])];
+
+          const dayMiles = dayRuns.reduce((sum, r) => sum + metersToMiles(r.distance), 0);
+          const dayMovingSec = dayRuns.reduce((sum, r) => sum + (r.moving_time || 0), 0);
+          const dayPaceSec = dayMiles > 0 ? dayMovingSec / dayMiles : null;
+
+          let targetMi = 0;
+          if (planned) {
+            if (planned.total_mi != null) {
+              targetMi = appState.includeWarmup ? planned.total_mi : planned.workout_mi;
+            } else {
+              targetMi = planned.distance_mi || 0;
+            }
+          }
+
+          if (dateYMD <= todayYMD && planned) {
+            plannedToDateMiles += (planned.total_mi != null ? planned.total_mi : (planned.distance_mi || 0));
+          }
+
+          actualTotalMiles += dayMiles;
+          if (dayName === "Tuesday" || dayName === "Thursday") {
+            const wuCd = Math.min(dayMiles, 2.0);
+            actualEasyMiles += wuCd;
+            actualWorkoutMiles += Math.max(0, dayMiles - wuCd);
+          } else if (dayName === "Saturday" || dayName === "Sunday") {
+            actualWorkoutMiles += dayMiles;
+          } else {
+            actualEasyMiles += dayMiles;
+          }
+
+          dayMap[dayName] = {
+            dayName,
+            dateYMD,
+            planned,
+            targetMi,
+            runs: dayRuns,
+            actualMiles: dayMiles,
+            actualMovingSec: dayMovingSec,
+            actualPaceSec: dayPaceSec,
+            isPast: dateYMD < todayYMD,
+            isToday: dateYMD === todayYMD
+          };
+        });
+
+        if (dayMap["Saturday"].actualMiles === 0 && dayMap["Sunday"].actualMiles >= 6) {
+          dayMap["Saturday"].sundaySwapRuns = dayMap["Sunday"].runs;
+          dayMap["Saturday"].sundaySwapMiles = dayMap["Sunday"].actualMiles;
+          dayMap["Saturday"].sundaySwapPaceSec = dayMap["Sunday"].actualPaceSec;
+        }
+
+        return {
+          ...week,
+          startYMD,
+          endYMD,
+          isCurrentWeek,
+          isPastWeek,
+          dayMap,
+          actualTotalMiles,
+          actualWorkoutMiles,
+          actualEasyMiles,
+          plannedToDateMiles
+        };
+      });
+
+      return {
+        weeks: enrichedWeeks,
+        runs,
+        todayYMD
+      };
+    }
+
+    function buildCalendarModel(runs, runsByDate, todayYMD, planModel) {
+      const planDayByDate = {};
+      const planWeekByStart = {};
+      if (planModel && planModel.weeks) {
+        planModel.weeks.forEach(w => {
+          planWeekByStart[w.startYMD] = w;
+          DAY_NAMES.forEach(dayName => {
+            const d = w.dayMap[dayName];
+            if (d) {
+              planDayByDate[d.dateYMD] = { ...d, weekNumber: w.week_number };
+            }
+          });
+        });
+      }
+
+      const monthYM = appState.calendarMonth || todayYMD.slice(0, 7);
+      const [mYear, mNum] = monthYM.split("-").map(Number);
+      const firstOfMonth = `${monthYM}-01`;
+      const lastDateObj = new Date(mYear, mNum, 0);
+      const lastOfMonth = formatYMD(lastDateObj);
+
+      const gridStartYMD = getMondayOfYMD(firstOfMonth);
+      const lastMondayYMD = getMondayOfYMD(lastOfMonth);
+      const gridEndYMD = addDays(lastMondayYMD, 6);
+
+      const monthWeeks = [];
+      let curStart = gridStartYMD;
+      let monthMiles = 0;
+      let monthRunCount = 0;
+      let monthPlannedMiles = 0;
+
+      while (curStart <= gridEndYMD) {
+        const endYMD = addDays(curStart, 6);
+        const days = [];
+        let weekMiles = 0;
+        let weekMovingSec = 0;
+        let weekRunCount = 0;
+        let weekPlannedMiles = 0;
+
+        for (let i = 0; i < 7; i++) {
+          const dateYMD = addDays(curStart, i);
+          const dayName = DAY_NAMES[i];
+          const inMonth = dateYMD.slice(0, 7) === monthYM;
+          const dayRuns = [...(runsByDate[dateYMD] || [])].sort((a, b) =>
+            (a.start_date_local || "").localeCompare(b.start_date_local || "")
+          );
+          const actualMiles = dayRuns.reduce((s, r) => s + metersToMiles(r.distance), 0);
+          const actualMovingSec = dayRuns.reduce((s, r) => s + (r.moving_time || 0), 0);
+          const actualPaceSec = actualMiles > 0 ? actualMovingSec / actualMiles : null;
+
+          const pd = planDayByDate[dateYMD] || null;
+          const planned = pd ? pd.planned : null;
+          const targetMi = pd ? pd.targetMi : 0;
+
+          if (inMonth) {
+            monthMiles += actualMiles;
+            monthRunCount += dayRuns.length;
+            if (targetMi > 0) monthPlannedMiles += targetMi;
+          }
+          weekMiles += actualMiles;
+          weekMovingSec += actualMovingSec;
+          weekRunCount += dayRuns.length;
+          if (targetMi > 0) weekPlannedMiles += targetMi;
+
+          days.push({
+            dateYMD,
+            dayName,
+            inMonth,
+            isToday: dateYMD === todayYMD,
+            isPast: dateYMD < todayYMD,
+            runs: dayRuns,
+            actualMiles,
+            actualMovingSec,
+            actualPaceSec,
+            planned,
+            targetMi,
+            weekNumber: pd ? pd.weekNumber : null,
+            sundaySwapMiles: pd ? pd.sundaySwapMiles : 0,
+            sundaySwapPaceSec: pd ? pd.sundaySwapPaceSec : null,
+            sundaySwapRuns: pd ? pd.sundaySwapRuns : []
+          });
+        }
+
+        const planWeek = planWeekByStart[curStart] || null;
+        monthWeeks.push({
+          startYMD: curStart,
+          endYMD,
+          label: `${formatShortDate(curStart)} – ${formatShortDate(endYMD)}`,
+          shortLabel: formatShortDate(curStart),
+          isCurrentWeek: todayYMD >= curStart && todayYMD <= endYMD,
+          isPastWeek: todayYMD > endYMD,
+          days,
+          weekMiles,
+          weekMovingSec,
+          weekRunCount,
+          planWeek,
+          weekPlannedMiles: planWeek ? planWeek.summary.total_miles : weekPlannedMiles
+        });
+
+        curStart = addDays(curStart, 7);
+      }
+
+      // Build rolling 16-week summary (Mon-Sun) ending on current week
+      const currentMonYMD = getMondayOfYMD(todayYMD);
+      const rollingWeeks = [];
+      for (let wIdx = 15; wIdx >= 0; wIdx--) {
+        const startYMD = addDays(currentMonYMD, -7 * wIdx);
+        const endYMD = addDays(startYMD, 6);
+        let actualTotalMiles = 0;
+        let movingSec = 0;
+        let runCount = 0;
+        const dayMap = {};
+        DAY_NAMES.forEach((dayName, i) => {
+          const dateYMD = addDays(startYMD, i);
+          const dayRuns = [...(runsByDate[dateYMD] || [])].sort((a, b) =>
+            (a.start_date_local || "").localeCompare(b.start_date_local || "")
+          );
+          const actualMiles = dayRuns.reduce((s, r) => s + metersToMiles(r.distance), 0);
+          const daySec = dayRuns.reduce((s, r) => s + (r.moving_time || 0), 0);
+          actualTotalMiles += actualMiles;
+          movingSec += daySec;
+          runCount += dayRuns.length;
+          dayMap[dayName] = {
+            dayName,
+            dateYMD,
+            planned: null,
+            targetMi: 0,
+            runs: dayRuns,
+            actualMiles,
+            actualMovingSec: daySec,
+            actualPaceSec: actualMiles > 0 ? daySec / actualMiles : null,
+            isPast: dateYMD < todayYMD,
+            isToday: dateYMD === todayYMD
+          };
+        });
+        rollingWeeks.push({
+          weekKey: `cal:${startYMD}`,
+          startYMD,
+          endYMD,
+          label: formatShortDate(startYMD),
+          isCurrentWeek: startYMD === currentMonYMD,
+          isPastWeek: todayYMD > endYMD,
+          actualTotalMiles,
+          movingSec,
+          runCount,
+          dayMap
+        });
+      }
+
+      // Month selector options: last 12 months + next month + any plan months
+      const monthSet = new Set();
+      const baseYM = todayYMD.slice(0, 7);
+      for (let d = -12; d <= 1; d++) monthSet.add(addMonthsYM(baseYM, d));
+      runs.forEach(r => {
+        const ym = (r.start_date_local || r.start_date || "").slice(0, 7);
+        if (ym) monthSet.add(ym);
+      });
+      if (planModel && planModel.weeks) {
+        planModel.weeks.forEach(w => {
+          monthSet.add(w.startYMD.slice(0, 7));
+          monthSet.add(w.endYMD.slice(0, 7));
+        });
+      }
+      monthSet.add(monthYM);
+      const monthOptions = Array.from(monthSet).sort();
+
+      return {
+        monthYM,
+        monthLabel: getMonthLabel(monthYM),
+        monthWeeks,
+        monthMiles,
+        monthRunCount,
+        monthPlannedMiles,
+        monthOptions,
+        rollingWeeks
+      };
+    }
+
+    function buildDashboardContext() {
+      const runs = getActiveActivities();
+      const runsByDate = groupRunsByDate(runs);
+      const todayYMD = getTodayYMD();
+      const hasPlan = Boolean(appState.plan_uploaded && appState.plan);
+      const planModel = hasPlan ? buildComparisonModel() : null;
+      const calendarModel = buildCalendarModel(runs, runsByDate, todayYMD, planModel);
+      return {
+        hasPlan,
+        runs,
+        runsByDate,
+        todayYMD,
+        planModel,
+        calendarModel
+      };
+    }
+
+    function parseTargetPaceSec(planned) {
+      if (!planned) return null;
+      const desc = planned.description || "";
+      const splitMatch = desc.match(/(\d+(?:\.\d+)?)\s*miles?\s*@\s*(?:0:)?(\d{1,2}):(\d{2})\s*and\s*then\s*(\d+(?:\.\d+)?)\s*miles?\s*@\s*(?:0:)?(\d{1,2}):(\d{2})/i);
+      if (splitMatch) {
+        const d1 = parseFloat(splitMatch[1]);
+        const s1 = parseInt(splitMatch[2], 10) * 60 + parseInt(splitMatch[3], 10);
+        const d2 = parseFloat(splitMatch[4]);
+        const s2 = parseInt(splitMatch[5], 10) * 60 + parseInt(splitMatch[6], 10);
+        if (d1 + d2 > 0) return (d1 * s1 + d2 * s2) / (d1 + d2);
+      }
+
+      const tp = planned.target_pace;
+      if (tp) {
+        const intervalMatch = tp.match(/^(\d{1,2}):(\d{2})\/(\d+)m$/i);
+        if (intervalMatch) {
+          const ivSec = parseInt(intervalMatch[1], 10) * 60 + parseInt(intervalMatch[2], 10);
+          const meters = parseInt(intervalMatch[3], 10);
+          if (meters === 800) return ivSec * 2;
+          if (meters === 400) return ivSec * 4;
+          if (meters > 0) return ivSec * (1609.344 / meters);
+        }
+        const mmss = tp.match(/^(\d{1,2}):(\d{2})$/);
+        if (mmss) {
+          return parseInt(mmss[1], 10) * 60 + parseInt(mmss[2], 10);
+        }
+      }
+
+      if ((planned.type || "").toLowerCase() === "hill" || /hill/i.test(desc)) {
+        return 600; // 10:00/mi
+      }
+      if (/kenyan/i.test(desc)) {
+        return 590; // 09:50/mi
+      }
+      if (/fartlek/i.test(desc)) {
+        return 566; // 09:26/mi tempo equivalent
+      }
+      return null;
+    }
+
+    function computeWorkoutVsFullPace(runs) {
+      if (!runs || runs.length === 0) {
+        return { workoutPaceSec: null, fullPaceSec: null, workoutMiles: 0, fullMiles: 0 };
+      }
+      const fullMiles = runs.reduce((s, r) => s + metersToMiles(r.distance), 0);
+      const fullSec = runs.reduce((s, r) => s + (r.moving_time || 0), 0);
+      const fullPaceSec = fullMiles > 0 ? fullSec / fullMiles : null;
+
+      if (runs.length === 1) {
+        return {
+          workoutPaceSec: fullPaceSec,
+          fullPaceSec,
+          workoutMiles: fullMiles,
+          fullMiles
+        };
+      }
+
+      const wuCdRegex = /warm\s*-?\s*up|cool\s*-?\s*down|kooldown|\bwu\b|\bcd\b/i;
+      let coreRuns = runs.filter(r => !wuCdRegex.test(r.name || ""));
+
+      if (coreRuns.length === runs.length) {
+        const longerRuns = runs.filter(r => metersToMiles(r.distance) > 1.5);
+        if (longerRuns.length > 0 && longerRuns.length < runs.length) {
+          coreRuns = longerRuns;
+        } else {
+          const maxRun = [...runs].sort((a, b) => (b.distance || 0) - (a.distance || 0))[0];
+          coreRuns = maxRun ? [maxRun] : runs;
+        }
+      }
+
+      const workoutMiles = coreRuns.reduce((s, r) => s + metersToMiles(r.distance), 0);
+      const workoutSec = coreRuns.reduce((s, r) => s + (r.moving_time || 0), 0);
+      const workoutPaceSec = workoutMiles > 0 ? workoutSec / workoutMiles : fullPaceSec;
+
+      return {
+        workoutPaceSec,
+        fullPaceSec,
+        workoutMiles,
+        fullMiles
+      };
+    }
+
+    function getShortSessionLabel(dateYMD, planned) {
+      const mmdd = `${dateYMD.slice(5, 7)}/${dateYMD.slice(8, 10)}`;
+      if (!planned) return mmdd;
+      const desc = planned.description || "";
+      const type = planned.type || "";
+      let shortType = type;
+      if (/yasso/i.test(desc)) shortType = "Yasso";
+      else if (/400m.*800m.*1600m/i.test(desc)) shortType = "Pyramid";
+      else if (/fartlek/i.test(desc)) shortType = "Fartlek";
+      else if (type === "Speed Work") shortType = "Intervals";
+      else if (type === "Long Run") shortType = "Long";
+      else if (type === "Easy") shortType = "Easy";
+      else if (type === "Tempo") shortType = "Tempo";
+      else if (type === "Hill") shortType = "Hill";
+      else if (type === "Race") shortType = "Marathon";
+      return `${mmdd} ${shortType}`;
+    }
+
+    function openPlanModal() {
+      const pdfUrl = `/api/plan-pdf?t=${Date.now()}#view=FitH`;
+      document.getElementById("planDialogTitle").textContent = appState.uploaded_filename || "Training Plan PDF";
+      document.getElementById("planModalFrame").src = pdfUrl;
+      document.getElementById("btnOpenPlanPdfNewTab").href = `/api/plan-pdf?t=${Date.now()}`;
+      document.getElementById("planPdfDialog").showModal();
+    }
+
+    async function handleFileUpload(file) {
+      if (!file) return;
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        alert("Please upload a PDF file (.pdf).");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const res = await fetch("/api/upload-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: file.name,
+              data_url: reader.result
+            })
+          });
+          const rawText = await res.text();
+          let data;
+          try {
+            data = JSON.parse(rawText);
+          } catch {
+            throw new Error(`Server returned non-JSON response (HTTP ${res.status}). Make sure app.py has been restarted with the latest code.`);
+          }
+          if (data.ok) {
+            appState.plan_uploaded = true;
+            appState.uploaded_filename = data.uploaded_filename;
+            appState.uploaded_at = data.uploaded_at;
+            appState.plan = data.plan;
+            appState.expandedMobileWeeks = null;
+            const model = buildComparisonModel();
+            const cur = model && model.weeks.find(w => w.isCurrentWeek);
+            if (cur) {
+              appState.selectedWeekNumber = cur.week_number;
+              appState.selectedWeekKey = `plan:${cur.week_number}`;
+            } else if (model && model.weeks.length > 0) {
+              appState.selectedWeekNumber = model.weeks[0].week_number;
+              appState.selectedWeekKey = `plan:${model.weeks[0].week_number}`;
+            }
+            document.getElementById("planModalFrame").src = `/api/plan-pdf?t=${Date.now()}#view=FitH`;
+            renderAll();
+          } else {
+            alert("Upload failed: " + (data.error || "Unknown error"));
+          }
+        } catch (err) {
+          alert("Error uploading training plan: " + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function removePlan() {
+      await fetch("/api/remove-plan", { method: "POST" });
+      appState.plan_uploaded = false;
+      appState.uploaded_filename = null;
+      appState.uploaded_at = null;
+      appState.plan = null;
+      appState.selectedWeekKey = null;
+      if (appState.activeTab === "matrix") {
+        appState.activeTab = "calendar";
+      }
+      renderAll();
+    }
+
+    async function disconnectStrava() {
+      await fetch("/api/disconnect", { method: "POST" });
+      appState.authenticated = false;
+      appState.athlete = null;
+      renderAll();
+    }
+
+    function escapeHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function trimLeadingZeroTime(t) {
+      if (!t) return "";
+      return String(t).replace(/^0:(0)?/, "");
+    }
+
+    function normalizeMmSsPace(p) {
+      if (!p) return "";
+      return String(p).replace(/^0:/, "");
+    }
+
+    function extractPlanHighlights(plan) {
+      const meta = (plan && plan.metadata) || {};
+      const equiv = meta.equivalents || {};
+      const weeks = (plan && plan.weeks) || [];
+
+      let easyPace = null;
+      let tempoPace = null;
+      const longPaces = [];
+
+      weeks.forEach(w => {
+        const d = w.days || {};
+        if (!easyPace) {
+          const ep = (d.Monday && d.Monday.target_pace) || (d.Wednesday && d.Wednesday.target_pace);
+          if (ep) easyPace = normalizeMmSsPace(ep);
+        }
+        if (!tempoPace && d.Thursday && d.Thursday.type === "Tempo" && d.Thursday.target_pace) {
+          tempoPace = normalizeMmSsPace(d.Thursday.target_pace);
+        }
+        if (d.Saturday && d.Saturday.type === "Long Run" && d.Saturday.target_pace) {
+          d.Saturday.target_pace.split("/").forEach(seg => {
+            const cleaned = normalizeMmSsPace(seg.trim());
+            if (cleaned) longPaces.push(cleaned);
+          });
+        }
+      });
+
+      const firstLong = longPaces[0];
+      const lastLong = longPaces[longPaces.length - 1];
+      const longRange = firstLong && lastLong
+        ? (firstLong === lastLong ? firstLong : `${firstLong}–${lastLong}`)
+        : "—";
+
+      const raceName = meta.race_name || "Marathon";
+      const raceDateISO = meta.race_date || "2027-02-14";
+      const raceDateObj = parseYMD(raceDateISO);
+      const raceDateLabel = raceDateObj
+        ? raceDateObj.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : raceDateISO;
+
+      const mEquiv = equiv.marathon || {};
+      const marathonTime = trimLeadingZeroTime(mEquiv.time);
+      const marathonPace = normalizeMmSsPace(mEquiv.pace_per_mile);
+
+      return {
+        raceName,
+        raceDateISO,
+        raceDateLabel,
+        equiv,
+        marathonTime,
+        marathonPace,
+        easyPace: easyPace || "—",
+        tempoPace: tempoPace || "—",
+        longRange
+      };
+    }
+
+    function renderEquivalentsBar(plan) {
+      const el = document.getElementById("equivItems");
+      if (!el || !plan) return;
+      const h = extractPlanHighlights(plan);
+      const eq = h.equiv;
+      const fmtItem = (label, entry, isGoal = false) => {
+        if (!entry || !entry.time) return "";
+        const t = trimLeadingZeroTime(entry.time);
+        const p = trimLeadingZeroTime(entry.pace_per_mile);
+        const cls = isGoal ? "equiv-item goal" : "equiv-item";
+        return `<div class="${cls}"><span class="label">${escapeHtml(label)}:</span><strong>${escapeHtml(t)}</strong>${p ? ` (${escapeHtml(p)}/mi)` : ""}</div>`;
+      };
+      el.innerHTML = [
+        fmtItem("5K", eq["5K"]),
+        fmtItem("10K", eq["10K"]),
+        fmtItem("Half Marathon", eq.half_marathon),
+        fmtItem("Marathon Goal", eq.marathon, true),
+        `<div class="equiv-item"><span class="label">Easy Pace:</span><strong>${escapeHtml(h.easyPace)}/mi</strong></div>`,
+        `<div class="equiv-item"><span class="label">Tempo Pace:</span><strong>${escapeHtml(h.tempoPace)}/mi</strong></div>`
+      ].filter(Boolean).join("");
+    }
+
+    function renderOnboardingAndHeader() {
+      const actions = document.getElementById("headerActions");
+      const gate = document.getElementById("onboardingGate");
+      const dash = document.getElementById("dashboardContent");
+      const wkBadge = document.getElementById("currentWeekBadge");
+      const sub = document.getElementById("athleteSub");
+
+      const ready = Boolean(appState.authenticated);
+      const hasPlan = Boolean(appState.plan_uploaded && appState.plan);
+
+      // Check URL params for auth errors
+      const urlParams = new URLSearchParams(window.location.search);
+      const authError = urlParams.get("auth_error");
+      const errBox = document.getElementById("authErrorNotice");
+      if (authError) {
+        errBox.style.display = "block";
+        errBox.textContent = `⚠️ Strava Authorization Error: ${authError}`;
+      } else {
+        errBox.style.display = "none";
+      }
+
+      if (!ready) {
+        gate.style.display = "block";
+        dash.style.display = "none";
+        wkBadge.style.display = "none";
+        actions.innerHTML = "";
+
+        // Render Optional Plan Card (Step 2)
+        const step1Card = document.getElementById("step1Card");
+        const step1Icon = document.getElementById("step1Icon");
+        const step1Badge = document.getElementById("step1Badge");
+        const step1Body = document.getElementById("step1Body");
+
+        if (appState.plan_uploaded) {
+          const highlights = extractPlanHighlights(appState.plan);
+          step1Card.classList.add("completed");
+          step1Icon.textContent = "✓";
+          step1Badge.className = "badge badge-green";
+          step1Badge.textContent = "Uploaded";
+          step1Body.innerHTML = `
+            <div class="uploaded-preview">
+              <div class="pdf-thumb" title="Click to preview PDF" onclick="openPlanModal()">
+                <span style="font-size:1.5rem;">📄</span>
+                <span style="font-size:0.65rem; font-weight:800; letter-spacing:0.06em;">PDF</span>
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:700; font-size:0.92rem;">${escapeHtml(appState.uploaded_filename || "training_plan.pdf")}</div>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem;">
+                  16-Week Schedule • ${escapeHtml(highlights.raceName)} (${escapeHtml(highlights.raceDateLabel)})
+                </div>
+                <div style="margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                  <button class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="openPlanModal()">View PDF</button>
+                  <button class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="document.getElementById('planFileInput').click()">Replace PDF</button>
+                  <button class="btn" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="removePlan()">Remove</button>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          step1Card.classList.remove("completed");
+          step1Icon.textContent = "2";
+          step1Badge.className = "badge badge-blue";
+          step1Badge.textContent = "Optional";
+          step1Body.innerHTML = `
+            <div class="dropzone" id="planDropzone">
+              <div style="font-size:1.8rem; margin-bottom:0.35rem;">📄</div>
+              <div style="font-weight:700; font-size:0.95rem;">Click or drag & drop your training plan PDF</div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;">
+                Optional • Supports <code>.pdf</code> training schedule files
+              </div>
+            </div>
+          `;
+          const dz = document.getElementById("planDropzone");
+          dz.addEventListener("click", () => document.getElementById("planFileInput").click());
+          dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragover"); });
+          dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+          dz.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dz.classList.remove("dragover");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              handleFileUpload(e.dataTransfer.files[0]);
+            }
+          });
+        }
+
+        // Render Primary Strava Card (Step 1)
+        const step2Card = document.getElementById("step2Card");
+        const step2Icon = document.getElementById("step2Icon");
+        const step2Badge = document.getElementById("step2Badge");
+        const step2Body = document.getElementById("step2Body");
+
+        step2Card.classList.remove("completed");
+        step2Icon.textContent = "1";
+        step2Badge.className = "badge badge-amber";
+        step2Badge.textContent = "Required";
+        step2Body.innerHTML = `
+          <a href="/auth/strava" class="btn btn-strava" style="width:100%; padding:0.85rem; font-size:0.95rem;">
+            🔗 Connect with Strava →
+          </a>
+        `;
+        return false;
+      }
+
+      // Authenticated: show dashboard (calendar-first; plan overlay when uploaded)
+      gate.style.display = "none";
+      dash.style.display = "block";
+      wkBadge.style.display = "inline-flex";
+
+      const eqBar = document.getElementById("equivalentsBar");
+      const planBanner = document.getElementById("planOptionalBanner");
+      const tabMatrix = document.getElementById("tabMatrix");
+      const warmupWrap = document.getElementById("warmupToggleWrap");
+
+      if (hasPlan) {
+        eqBar.style.display = "flex";
+        planBanner.style.display = "none";
+        tabMatrix.style.display = "";
+        warmupWrap.style.display = "flex";
+
+        const highlights = extractPlanHighlights(appState.plan);
+        renderEquivalentsBar(appState.plan);
+        const goalSuffix = highlights.marathonTime
+          ? ` • Goal ${highlights.marathonTime}${highlights.marathonPace ? ` (${highlights.marathonPace}/mi)` : ""}`
+          : "";
+        sub.textContent = `Plan: ${appState.uploaded_filename || "training_plan.pdf"} • ${highlights.raceName} (${highlights.raceDateLabel})${goalSuffix}`;
+      } else {
+        eqBar.style.display = "none";
+        planBanner.style.display = "flex";
+        tabMatrix.style.display = "none";
+        warmupWrap.style.display = "none";
+        if (appState.activeTab === "matrix") {
+          appState.activeTab = "calendar";
+        }
+        sub.textContent = "Strava Running Calendar • Last 12 Months (No Training Plan Required)";
+      }
+
+      const athleteName = appState.athlete
+        ? `${appState.athlete.firstname || ""} ${appState.athlete.lastname || ""}`.trim()
+        : "Strava Connected";
+      const avatar = appState.athlete && appState.athlete.profile_medium
+        ? `<img src="${appState.athlete.profile_medium}" alt="" />`
+        : "";
+
+      const planButtonsHtml = hasPlan
+        ? `
+          <button class="btn" id="btnShowPlanPdf">📋 View Plan PDF</button>
+          <button class="btn" id="btnChangePlan">📤 Change Plan</button>
+          <button class="btn" id="btnRemovePlan" title="Remove training plan PDF and return to calendar-only mode">✕ Remove Plan</button>
+        `
+        : `
+          <button class="btn" id="btnUploadPlan">📄 Upload Plan PDF</button>
+        `;
+
+      actions.innerHTML = `
+        ${planButtonsHtml}
+        <span class="athlete-pill">
+          <span class="status-dot"></span>
+          ${avatar}
+          <strong>${escapeHtml(athleteName)}</strong>
+        </span>
+        <button class="btn btn-strava" id="btnSyncNow">🔄 Sync Strava</button>
+        <button class="btn" id="btnDisconnectStrava" title="Disconnect your Strava account">Disconnect</button>
+      `;
+
+      if (hasPlan) {
+        document.getElementById("btnShowPlanPdf").addEventListener("click", openPlanModal);
+        document.getElementById("btnChangePlan").addEventListener("click", () => {
+          document.getElementById("planFileInput").click();
+        });
+        document.getElementById("btnRemovePlan").addEventListener("click", removePlan);
+      } else {
+        document.getElementById("btnUploadPlan").addEventListener("click", () => {
+          document.getElementById("planFileInput").click();
+        });
+      }
+      document.getElementById("btnSyncNow").addEventListener("click", triggerSync);
+      document.getElementById("btnDisconnectStrava").addEventListener("click", disconnectStrava);
+      return true;
+    }
+
+    function renderKPIs(ctx) {
+      if (ctx.hasPlan && ctx.planModel) {
+        const model = ctx.planModel;
+        const currentWeek = model.weeks.find(w => w.isCurrentWeek) || model.weeks[0];
+        document.getElementById("currentWeekBadge").textContent = `Week ${currentWeek.week_number} (${currentWeek.label})`;
+
+        document.getElementById("kpi1Label").textContent = `Week ${currentWeek.week_number} (${currentWeek.label})`;
+        const wkPct = Math.min(999, Math.round((currentWeek.actualTotalMiles / currentWeek.summary.total_miles) * 100));
+        document.getElementById("kpi1Badge").textContent = `${wkPct}%`;
+        document.getElementById("kpi1Value").textContent = `${currentWeek.actualTotalMiles.toFixed(1)} / ${currentWeek.summary.total_miles} mi`;
+        document.getElementById("kpi1Bar").style.width = `${Math.min(100, wkPct)}%`;
+        document.getElementById("kpi1Sub").textContent =
+          `3-WO: ${currentWeek.actualWorkoutMiles.toFixed(1)}/${currentWeek.summary.workout_miles} mi • Easy: ${currentWeek.actualEasyMiles.toFixed(1)}/${currentWeek.summary.easy_miles} mi`;
+
+        let totalActual = 0;
+        let totalPlannedToDate = 0;
+        let totalWOActual = 0;
+        let totalEasyActual = 0;
+
+        for (const w of model.weeks) {
+          totalActual += w.actualTotalMiles;
+          totalPlannedToDate += w.plannedToDateMiles;
+          totalWOActual += w.actualWorkoutMiles;
+          totalEasyActual += w.actualEasyMiles;
+        }
+
+        const adherencePct = totalPlannedToDate > 0 ? Math.round((totalActual / totalPlannedToDate) * 100) : 0;
+        document.getElementById("kpi2Label").textContent = "Plan-to-Date Adherence";
+        document.getElementById("kpi2Badge").textContent = totalPlannedToDate > 0 ? `${adherencePct}% of Plan` : "--";
+        document.getElementById("kpi2Value").textContent = `${totalActual.toFixed(1)} mi`;
+        document.getElementById("kpi2Sub").textContent =
+          `vs. ${totalPlannedToDate.toFixed(1)} mi planned to date • ${model.runs.length} runs`;
+
+        document.getElementById("kpi3Label").textContent = "3-Workout vs. Easy Split";
+        document.getElementById("kpi3Badge").textContent = "Tue/Thu/Sat vs Easy";
+        document.getElementById("kpi3Value").textContent = `${totalWOActual.toFixed(1)} / ${totalEasyActual.toFixed(1)} mi`;
+        document.getElementById("kpi3Sub").textContent = "Includes +1 mi WU & +1 mi CD on Tue/Thu as Easy";
+
+        const totalDistMi = model.runs.reduce((s, r) => s + metersToMiles(r.distance), 0);
+        const totalSec = model.runs.reduce((s, r) => s + (r.moving_time || 0), 0);
+        const avgPace = totalDistMi > 0 ? formatPaceFromSecPerMile(totalSec / totalDistMi) : "--:--";
+        document.getElementById("kpi4Label").textContent = "Pace Check (Actual vs Plan)";
+        document.getElementById("kpi4Value").textContent = `${avgPace} /mi`;
+
+        const highlights = extractPlanHighlights(appState.plan);
+        const raceDate = parseYMD(highlights.raceDateISO);
+        const now = new Date();
+        const diffDays = raceDate ? Math.max(0, Math.ceil((raceDate - now) / (1000 * 60 * 60 * 24))) : 0;
+        document.getElementById("kpi4Badge").textContent = `${diffDays}d to ${highlights.raceName}`;
+        document.getElementById("kpi4Sub").textContent =
+          `Easy Target: ${highlights.easyPace} • Tempo: ${highlights.tempoPace} • Long: ${highlights.longRange}`;
+        return;
+      }
+
+      // Strava-Only Mode KPIs
+      const cal = ctx.calendarModel;
+      const runs = ctx.runs;
+      const curWeek = cal.rollingWeeks[cal.rollingWeeks.length - 1];
+      const prev4Weeks = cal.rollingWeeks.slice(-5, -1);
+      const activePrev = prev4Weeks.filter(w => w.actualTotalMiles > 0);
+      const avg4Wk = activePrev.length > 0
+        ? prev4Weeks.reduce((s, w) => s + w.actualTotalMiles, 0) / 4
+        : 0;
+      const curWkPace = curWeek.actualTotalMiles > 0
+        ? formatPaceFromSecPerMile(curWeek.movingSec / curWeek.actualTotalMiles)
+        : "--:--";
+      const curPct = avg4Wk > 0 ? Math.min(100, Math.round((curWeek.actualTotalMiles / avg4Wk) * 100)) : (curWeek.actualTotalMiles > 0 ? 100 : 0);
+
+      document.getElementById("currentWeekBadge").textContent = `This Week • ${curWeek.actualTotalMiles.toFixed(1)} mi`;
+
+      document.getElementById("kpi1Label").textContent = `This Week (${curWeek.label})`;
+      document.getElementById("kpi1Badge").textContent = `${curWeek.runCount} run${curWeek.runCount === 1 ? "" : "s"}`;
+      document.getElementById("kpi1Value").textContent = `${curWeek.actualTotalMiles.toFixed(1)} mi`;
+      document.getElementById("kpi1Bar").style.width = `${curPct}%`;
+      document.getElementById("kpi1Sub").textContent =
+        `4-wk avg: ${avg4Wk.toFixed(1)} mi/wk • Week pace: ${curWkPace}/mi`;
+
+      const total12MoMiles = runs.reduce((s, r) => s + metersToMiles(r.distance), 0);
+      const total12MoSec = runs.reduce((s, r) => s + (r.moving_time || 0), 0);
+
+      document.getElementById("kpi2Label").textContent = `${cal.monthLabel}`;
+      document.getElementById("kpi2Badge").textContent = `${cal.monthRunCount} run${cal.monthRunCount === 1 ? "" : "s"}`;
+      document.getElementById("kpi2Value").textContent = `${cal.monthMiles.toFixed(1)} mi`;
+      document.getElementById("kpi2Sub").textContent =
+        `12-month total: ${total12MoMiles.toFixed(1)} mi (${runs.length} runs)`;
+
+      const longestRun = runs.reduce((best, r) => {
+        if (!best || (r.distance || 0) > (best.distance || 0)) return r;
+        return best;
+      }, null);
+
+      document.getElementById("kpi3Label").textContent = "Longest Run (12 Mo)";
+      if (longestRun) {
+        const longMi = metersToMiles(longestRun.distance);
+        const longDate = (longestRun.start_date_local || "").slice(0, 10);
+        const longPace = longMi > 0 ? formatPaceFromSecPerMile((longestRun.moving_time || 0) / longMi) : "--:--";
+        document.getElementById("kpi3Badge").textContent = longDate ? formatShortDate(longDate) : "PR";
+        document.getElementById("kpi3Value").textContent = `${longMi.toFixed(2)} mi`;
+        document.getElementById("kpi3Sub").textContent = `${longestRun.name || "Run"} • ${longPace}/mi`;
+      } else {
+        document.getElementById("kpi3Badge").textContent = "No runs";
+        document.getElementById("kpi3Value").textContent = "0.00 mi";
+        document.getElementById("kpi3Sub").textContent = "Sync Strava activities to populate longest run";
+      }
+
+      const avgPace12Mo = total12MoMiles > 0 ? formatPaceFromSecPerMile(total12MoSec / total12MoMiles) : "--:--";
+      document.getElementById("kpi4Label").textContent = "Average Pace (12 Mo)";
+      document.getElementById("kpi4Badge").textContent = "Last 12 Months";
+      document.getElementById("kpi4Value").textContent = `${avgPace12Mo} /mi`;
+      document.getElementById("kpi4Sub").textContent =
+        `Total time: ${formatDuration(total12MoSec)} • Upload plan for target paces`;
+    }
+
+    function renderMileageChart(ctx) {
+      const container = document.getElementById("mileageChartContainer");
+      const titleEl = document.getElementById("mileageSectionTitle");
+      const legendEl = document.getElementById("mileageChartLegend");
+
+      const width = 1040;
+      const height = 220;
+      const padLeft = 40;
+      const padRight = 20;
+      const padTop = 24;
+      const padBottom = 42;
+      const plotW = width - padLeft - padRight;
+      const plotH = height - padTop - padBottom;
+
+      if (ctx.hasPlan && ctx.planModel) {
+        titleEl.textContent = "📈 16-Week Mileage Progression: Planned vs. Strava Actual";
+        legendEl.innerHTML = `
+          <span><i class="legend-dot" style="background: var(--chart-plan);"></i>Planned Total Miles</span>
+          <span><i class="legend-dot" style="background: var(--chart-full);"></i>Actual 3-WO Miles</span>
+          <span><i class="legend-dot" style="background: var(--chart-workout);"></i>Actual Easy Miles</span>
+        `;
+
+        const weeks = ctx.planModel.weeks;
+        const maxMiles = Math.max(52, ...weeks.map(w => Math.ceil(Math.max(w.summary.total_miles, w.actualTotalMiles) / 10) * 10));
+        const colW = plotW / weeks.length;
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%">`;
+        [0, 15, 30, 45].filter(v => v <= maxMiles).forEach(val => {
+          const y = padTop + plotH - (val / maxMiles) * plotH;
+          svg += `
+            <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="var(--chart-grid)" stroke-dasharray="4 4" />
+            <text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" fill="var(--chart-axis)" font-size="11">${val}m</text>
+          `;
+        });
+
+        weeks.forEach((w, idx) => {
+          const xCenter = padLeft + idx * colW + colW / 2;
+          const barW = 18;
+
+          const planH = (w.summary.total_miles / maxMiles) * plotH;
+          const planY = padTop + plotH - planH;
+
+          const woH = (Math.min(maxMiles, w.actualWorkoutMiles) / maxMiles) * plotH;
+          const easyH = (Math.min(maxMiles, w.actualEasyMiles) / maxMiles) * plotH;
+          const actualTotalH = woH + easyH;
+          const actualY = padTop + plotH - actualTotalH;
+
+          if (w.isCurrentWeek) {
+            svg += `<rect x="${padLeft + idx * colW + 2}" y="${padTop - 8}" width="${colW - 4}" height="${plotH + 34}" rx="6" fill="var(--chart-highlight-bg)" stroke="var(--chart-highlight-border)" />`;
+          }
+
+          svg += `
+            <rect x="${xCenter - barW - 2}" y="${planY}" width="${barW}" height="${planH}" rx="3" fill="var(--chart-plan)">
+              <title>Week ${w.week_number} (${w.label}) Planned: ${w.summary.total_miles} mi (${w.summary.workout_miles} WO + ${w.summary.easy_miles} Easy)</title>
+            </rect>
+            <text x="${xCenter - barW / 2 - 2}" y="${planY - 4}" text-anchor="middle" fill="var(--chart-axis)" font-size="9.5">${w.summary.total_miles}</text>
+          `;
+
+          if (w.actualTotalMiles > 0) {
+            const woY = padTop + plotH - woH;
+            const easyY = woY - easyH;
+            svg += `
+              <rect x="${xCenter + 2}" y="${woY}" width="${barW}" height="${woH}" rx="2" fill="var(--chart-full)">
+                <title>Week ${w.week_number} Actual 3-WO: ${w.actualWorkoutMiles.toFixed(1)} mi</title>
+              </rect>
+              <rect x="${xCenter + 2}" y="${easyY}" width="${barW}" height="${easyH}" rx="2" fill="var(--chart-workout)">
+                <title>Week ${w.week_number} Actual Easy: ${w.actualEasyMiles.toFixed(1)} mi</title>
+              </rect>
+              <text x="${xCenter + barW / 2 + 2}" y="${actualY - 4}" text-anchor="middle" fill="var(--chart-bar-text)" font-weight="700" font-size="9.5">${w.actualTotalMiles.toFixed(1)}</text>
+            `;
+          }
+
+          svg += `
+            <text x="${xCenter}" y="${height - 20}" text-anchor="middle" fill="${w.isCurrentWeek ? 'var(--brand)' : 'var(--text)'}" font-weight="${w.isCurrentWeek ? '700' : '500'}" font-size="10.5">W${w.week_number}</text>
+            <text x="${xCenter}" y="${height - 7}" text-anchor="middle" fill="var(--chart-axis)" font-size="9.5">${w.label}</text>
+          `;
+        });
+
+        svg += `</svg>`;
+        container.innerHTML = svg;
+        return;
+      }
+
+      // Strava-Only Mode: Last 16 calendar weeks (Mon-Sun)
+      titleEl.textContent = "📈 Weekly Mileage Progression (Last 16 Weeks)";
+      legendEl.innerHTML = `
+        <span><i class="legend-dot" style="background: var(--chart-full);"></i>Actual Weekly Miles</span>
+      `;
+      const weeks = ctx.calendarModel.rollingWeeks;
+      const peakMiles = Math.max(20, ...weeks.map(w => w.actualTotalMiles));
+      const maxMiles = Math.ceil((peakMiles * 1.15) / 10) * 10;
+      const step = maxMiles <= 30 ? 10 : (maxMiles <= 60 ? 15 : 20);
+      const colW = plotW / weeks.length;
+
+      let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%">`;
+      for (let val = 0; val <= maxMiles; val += step) {
+        const y = padTop + plotH - (val / maxMiles) * plotH;
+        svg += `
+          <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="var(--chart-grid)" stroke-dasharray="4 4" />
+          <text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" fill="var(--chart-axis)" font-size="11">${val}m</text>
+        `;
+      }
+
+      weeks.forEach((w, idx) => {
+        const xCenter = padLeft + idx * colW + colW / 2;
+        const barW = 24;
+        const actualH = (Math.min(maxMiles, w.actualTotalMiles) / maxMiles) * plotH;
+        const actualY = padTop + plotH - actualH;
+
+        if (w.isCurrentWeek) {
+          svg += `<rect x="${padLeft + idx * colW + 2}" y="${padTop - 8}" width="${colW - 4}" height="${plotH + 34}" rx="6" fill="var(--chart-highlight-bg)" stroke="var(--chart-highlight-border)" />`;
+        }
+
+        if (w.actualTotalMiles > 0) {
+          svg += `
+            <rect x="${xCenter - barW / 2}" y="${actualY}" width="${barW}" height="${actualH}" rx="3" fill="var(--chart-full)">
+              <title>Week of ${w.label}: ${w.actualTotalMiles.toFixed(1)} mi (${w.runCount} runs)</title>
+            </rect>
+            <text x="${xCenter}" y="${actualY - 4}" text-anchor="middle" fill="var(--chart-bar-text)" font-weight="700" font-size="9.5">${w.actualTotalMiles.toFixed(1)}</text>
+          `;
+        }
+
+        svg += `
+          <text x="${xCenter}" y="${height - 14}" text-anchor="middle" fill="${w.isCurrentWeek ? 'var(--brand)' : 'var(--chart-axis)'}" font-weight="${w.isCurrentWeek ? '700' : '500'}" font-size="9.5">${w.label}</text>
+        `;
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+    }
+
+    function renderPaceChart(ctx) {
+      const container = document.getElementById("paceChartContainer");
+      const titleEl = document.getElementById("paceSectionTitle");
+      const legendEl = document.getElementById("paceChartLegend");
+      const hintEl = document.getElementById("paceScrollHint");
+      if (!container) return;
+
+      const width = 1040;
+      const height = 330;
+      const padLeft = 52;
+      const padRight = 24;
+      const padTop = 20;
+      const padBottom = 112;
+      const plotW = width - padLeft - padRight;
+      const plotH = height - padTop - padBottom;
+
+      if (ctx.hasPlan && ctx.planModel) {
+        titleEl.textContent = "⏱️ 16-Week Pace Progression: Target vs. Workout vs. Warmup/Cooldown";
+        legendEl.innerHTML = `
+          <span><i class="legend-dot" style="background: var(--chart-target);"></i>Target Pace</span>
+          <span><i class="legend-dot" style="background: var(--chart-workout);"></i>Workout Pace</span>
+          <span><i class="legend-dot" style="background: var(--chart-full);"></i>Workout Pace + Warmup/Cooldown</span>
+        `;
+        if (hintEl) hintEl.textContent = "← Swipe horizontally to view all 80 sessions →";
+
+        const model = ctx.planModel;
+        const scheduledDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Saturday"];
+        const sessions = [];
+
+        model.weeks.forEach(w => {
+          scheduledDays.forEach(dayName => {
+            const dayInfo = w.dayMap[dayName];
+            if (!dayInfo || !dayInfo.planned) return;
+            const effectiveRuns = dayInfo.actualMiles > 0 ? dayInfo.runs : (dayInfo.sundaySwapRuns || []);
+            const targetPaceSec = parseTargetPaceSec(dayInfo.planned);
+            const { workoutPaceSec, fullPaceSec, workoutMiles, fullMiles } = computeWorkoutVsFullPace(effectiveRuns);
+            const shortLabel = getShortSessionLabel(dayInfo.dateYMD, dayInfo.planned);
+
+            sessions.push({
+              weekNumber: w.week_number,
+              isCurrentWeek: w.isCurrentWeek,
+              dateYMD: dayInfo.dateYMD,
+              dayName,
+              planned: dayInfo.planned,
+              shortLabel,
+              targetPaceSec,
+              workoutPaceSec,
+              fullPaceSec,
+              targetPaceMin: targetPaceSec ? targetPaceSec / 60 : null,
+              workoutPaceMin: workoutPaceSec ? workoutPaceSec / 60 : null,
+              fullPaceMin: fullPaceSec ? fullPaceSec / 60 : null,
+              workoutMiles,
+              fullMiles
+            });
+          });
+        });
+
+        const minPace = 0;
+        const maxPace = 12.2;
+        const xForIdx = idx => padLeft + (sessions.length > 1 ? (idx / (sessions.length - 1)) * plotW : plotW / 2);
+        const yForPace = paceMin => {
+          const clamped = Math.max(minPace, Math.min(maxPace, paceMin));
+          return padTop + plotH - ((clamped - minPace) / (maxPace - minPace)) * plotH;
+        };
+
+        let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%">`;
+        [0, 2, 4, 6, 8, 10, 12].forEach(val => {
+          const y = yForPace(val);
+          const isZero = val === 0;
+          svg += `
+            <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="${isZero ? 'var(--chart-zero)' : 'var(--chart-grid)'}" stroke-width="${isZero ? '1.5' : '1'}" ${isZero ? '' : 'stroke-dasharray="4 4"'} />
+            <text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" fill="var(--chart-axis)" font-size="11">${val}</text>
+          `;
+        });
+        svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" fill="var(--chart-axis)" font-size="11" font-weight="600" transform="rotate(-90, 14, ${padTop + plotH / 2})">Pace (min/mi)</text>`;
+
+        const curIndices = sessions.map((s, idx) => (s.isCurrentWeek ? idx : -1)).filter(idx => idx >= 0);
+        if (curIndices.length > 0) {
+          const xStart = Math.max(padLeft, xForIdx(curIndices[0]) - 6);
+          const xEnd = Math.min(width - padRight, xForIdx(curIndices[curIndices.length - 1]) + 6);
+          svg += `<rect x="${xStart}" y="${padTop - 6}" width="${xEnd - xStart}" height="${plotH + 12}" rx="6" fill="var(--chart-highlight-bg)" stroke="var(--chart-highlight-border)" />`;
+        }
+
+        const buildPath = (key) => {
+          let d = "";
+          let inSeg = false;
+          sessions.forEach((s, idx) => {
+            const val = s[key];
+            if (val != null && isFinite(val)) {
+              d += `${inSeg ? "L" : "M"}${xForIdx(idx).toFixed(1)},${yForPace(val).toFixed(1)} `;
+              inSeg = true;
+            } else {
+              inSeg = false;
+            }
+          });
+          return d.trim();
+        };
+
+        const targetPath = buildPath("targetPaceMin");
+        const workoutPath = buildPath("workoutPaceMin");
+        const fullPath = buildPath("fullPaceMin");
+        if (targetPath) svg += `<path d="${targetPath}" fill="none" stroke="var(--chart-target)" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round" opacity="0.85" />`;
+        if (fullPath) svg += `<path d="${fullPath}" fill="none" stroke="var(--chart-full)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" />`;
+        if (workoutPath) svg += `<path d="${workoutPath}" fill="none" stroke="var(--chart-workout)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />`;
+
+        const axisBaseY = yForPace(0);
+        sessions.forEach((s, idx) => {
+          const x = xForIdx(idx);
+          if (idx % 2 === 0) {
+            const labelY = axisBaseY + 10;
+            const displayLabel = s.shortLabel.length > 14 ? s.shortLabel.slice(0, 13) + "…" : s.shortLabel;
+            svg += `<text x="${x}" y="${labelY}" text-anchor="end" dominant-baseline="central" fill="${s.isCurrentWeek ? 'var(--brand)' : 'var(--chart-axis)'}" font-weight="${s.isCurrentWeek ? '700' : '400'}" font-size="9.5" transform="rotate(-90, ${x}, ${labelY})">${displayLabel}</text>`;
+          }
+          const targetStr = s.targetPaceSec ? `${formatPaceFromSecPerMile(s.targetPaceSec)}/mi (${s.targetPaceMin.toFixed(2)})` : "N/A";
+          const woStr = s.workoutPaceSec ? `${formatPaceFromSecPerMile(s.workoutPaceSec)}/mi (${s.workoutPaceMin.toFixed(2)})` : "Not logged";
+          const fullStr = s.fullPaceSec ? `${formatPaceFromSecPerMile(s.fullPaceSec)}/mi (${s.fullPaceMin.toFixed(2)})` : "Not logged";
+          const tip = `W${s.weekNumber} • ${s.dayName} (${s.dateYMD})\n${s.planned.description}\nTarget Pace: ${targetStr}\nWorkout Pace: ${woStr}\nWorkout + WU/CD Pace: ${fullStr}`;
+
+          if (s.fullPaceMin != null) svg += `<circle cx="${x.toFixed(1)}" cy="${yForPace(s.fullPaceMin).toFixed(1)}" r="2.8" fill="var(--chart-full)"><title>${tip}</title></circle>`;
+          if (s.workoutPaceMin != null) svg += `<circle cx="${x.toFixed(1)}" cy="${yForPace(s.workoutPaceMin).toFixed(1)}" r="2.3" fill="var(--chart-workout)"><title>${tip}</title></circle>`;
+          const stripW = plotW / Math.max(1, sessions.length);
+          svg += `<rect x="${(x - stripW / 2).toFixed(1)}" y="${padTop}" width="${stripW.toFixed(1)}" height="${plotH}" fill="transparent"><title>${tip}</title></rect>`;
+        });
+
+        svg += `<text x="${padLeft + plotW / 2}" y="${height - 6}" text-anchor="middle" fill="var(--chart-axis)" font-size="11" font-weight="600">Workout Session</text></svg>`;
+        container.innerHTML = svg;
+        return;
+      }
+
+      // Strava-Only Mode: Chronological pace progression for recent runs (up to 60 runs)
+      titleEl.textContent = "⏱️ Run Pace Progression (Recent Runs)";
+      legendEl.innerHTML = `
+        <span><i class="legend-dot" style="background: var(--chart-full);"></i>Run Pace (min/mi)</span>
+      `;
+      if (hintEl) hintEl.textContent = "← Swipe horizontally to view run pace trend →";
+
+      const validRuns = [...ctx.runs]
+        .filter(r => metersToMiles(r.distance) >= 0.25 && (r.moving_time || 0) > 0)
+        .sort((a, b) => (a.start_date_local || "").localeCompare(b.start_date_local || ""))
+        .slice(-60);
+
+      if (validRuns.length === 0) {
+        container.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.9rem;">No synced Strava runs yet — click Sync Strava to load your pace progression.</div>`;
+        return;
+      }
+
+      const points = validRuns.map(r => {
+        const mi = metersToMiles(r.distance);
+        const secPerMi = (r.moving_time || 0) / mi;
+        const ymd = (r.start_date_local || r.start_date || "").slice(0, 10);
+        return {
+          run: r,
+          ymd,
+          label: `${ymd.slice(5, 7)}/${ymd.slice(8, 10)}`,
+          miles: mi,
+          paceSec: secPerMi,
+          paceMin: secPerMi / 60
+        };
+      });
+
+      const minPace = 0;
+      const maxObservedPace = Math.max(12, ...points.map(p => Math.ceil(p.paceMin)));
+      const maxPace = Math.min(20, maxObservedPace + 0.5);
+      const xForIdx = idx => padLeft + (points.length > 1 ? (idx / (points.length - 1)) * plotW : plotW / 2);
+      const yForPace = paceMin => {
+        const clamped = Math.max(minPace, Math.min(maxPace, paceMin));
+        return padTop + plotH - ((clamped - minPace) / (maxPace - minPace)) * plotH;
+      };
+
+      let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%">`;
+      const step = maxPace > 14 ? 4 : 2;
+      for (let val = 0; val <= maxPace; val += step) {
+        const y = yForPace(val);
+        const isZero = val === 0;
+        svg += `
+          <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="${isZero ? 'var(--chart-zero)' : 'var(--chart-grid)'}" stroke-width="${isZero ? '1.5' : '1'}" ${isZero ? '' : 'stroke-dasharray="4 4"'} />
+          <text x="${padLeft - 8}" y="${y + 4}" text-anchor="end" fill="var(--chart-axis)" font-size="11">${val}</text>
+        `;
+      }
+      svg += `<text x="14" y="${padTop + plotH / 2}" text-anchor="middle" fill="var(--chart-axis)" font-size="11" font-weight="600" transform="rotate(-90, 14, ${padTop + plotH / 2})">Pace (min/mi)</text>`;
+
+      let pathD = "";
+      points.forEach((p, idx) => {
+        pathD += `${idx === 0 ? "M" : "L"}${xForIdx(idx).toFixed(1)},${yForPace(p.paceMin).toFixed(1)} `;
+      });
+      if (pathD) {
+        svg += `<path d="${pathD.trim()}" fill="none" stroke="var(--chart-full)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" />`;
+      }
+
+      const axisBaseY = yForPace(0);
+      const labelStep = Math.max(1, Math.ceil(points.length / 26));
+      points.forEach((p, idx) => {
+        const x = xForIdx(idx);
+        const y = yForPace(p.paceMin);
+        const tip = `${p.ymd} • ${p.run.name || "Run"}\nDistance: ${p.miles.toFixed(2)} mi • Pace: ${formatPaceFromSecPerMile(p.paceSec)}/mi • Time: ${formatDuration(p.run.moving_time)}`;
+        if (idx % labelStep === 0 || idx === points.length - 1) {
+          const labelY = axisBaseY + 10;
+          svg += `<text x="${x}" y="${labelY}" text-anchor="end" dominant-baseline="central" fill="var(--chart-axis)" font-size="9.5" transform="rotate(-90, ${x}, ${labelY})">${p.label}</text>`;
+        }
+        svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="var(--chart-full)"><title>${escapeHtml(tip)}</title></circle>`;
+      });
+
+      svg += `<text x="${padLeft + plotW / 2}" y="${height - 6}" text-anchor="middle" fill="var(--chart-axis)" font-size="11" font-weight="600">Recent Strava Runs (${points.length})</text></svg>`;
+      container.innerHTML = svg;
+    }
+
+    function toggleDayRunDetails(dateKey, isOpen) {
+      if (!dateKey) return;
+      if (isOpen) {
+        appState.expandedDayKeys.add(dateKey);
+      } else {
+        appState.expandedDayKeys.delete(dateKey);
+      }
+    }
+
+    function toggleMobileWeekDetails(weekNumber, isOpen) {
+      if (!appState.expandedMobileWeeks) {
+        appState.expandedMobileWeeks = new Set();
+      }
+      const num = Number(weekNumber);
+      if (isOpen) {
+        appState.expandedMobileWeeks.add(num);
+      } else {
+        appState.expandedMobileWeeks.delete(num);
+      }
+    }
+
+    function toggleCalendarWeekDetails(startYMD, isOpen) {
+      if (!appState.expandedCalendarWeeks) {
+        appState.expandedCalendarWeeks = new Set();
+      }
+      if (isOpen) {
+        appState.expandedCalendarWeeks.add(startYMD);
+      } else {
+        appState.expandedCalendarWeeks.delete(startYMD);
+      }
+    }
+
+    function shiftCalendarMonth(delta) {
+      appState.calendarMonth = addMonthsYM(appState.calendarMonth || getTodayYMD().slice(0, 7), delta);
+      appState.expandedCalendarWeeks = null;
+      renderAll();
+    }
+
+    function goToCurrentMonth() {
+      appState.calendarMonth = getTodayYMD().slice(0, 7);
+      appState.expandedCalendarWeeks = null;
+      renderAll();
+    }
+
+    function selectCalendarMonth(ym) {
+      if (!ym) return;
+      appState.calendarMonth = ym;
+      appState.expandedCalendarWeeks = null;
+      renderAll();
+    }
+
+    function getDayPlanStatus(dayInfo) {
+      if (!dayInfo || !dayInfo.planned) return null;
+      const effectiveMiles = dayInfo.actualMiles > 0 ? dayInfo.actualMiles : (dayInfo.sundaySwapMiles || 0);
+      const effectivePaceSec = dayInfo.actualMiles > 0 ? dayInfo.actualPaceSec : (dayInfo.sundaySwapPaceSec || null);
+      const effectiveRuns = (dayInfo.actualMiles > 0 ? dayInfo.runs : (dayInfo.sundaySwapRuns || []))
+        .slice()
+        .sort((a, b) => (a.start_date_local || "").localeCompare(b.start_date_local || ""));
+      const isSwappedToSun = dayInfo.actualMiles === 0 && (dayInfo.sundaySwapMiles || 0) > 0;
+
+      let statusClass = "upcoming";
+      let statusLabel = dayInfo.isToday ? "Today" : "Upcoming";
+
+      if (effectiveMiles > 0) {
+        const ratio = effectiveMiles / (dayInfo.targetMi || 1);
+        if (ratio >= 0.88) {
+          statusClass = "hit";
+          statusLabel = isSwappedToSun ? "Done Sun ✓" : "Completed ✓";
+        } else {
+          statusClass = "partial";
+          statusLabel = `${Math.round(ratio * 100)}% Dist`;
+        }
+      } else if (dayInfo.isPast) {
+        statusClass = "missed";
+        statusLabel = "Missed";
+      }
+
+      return {
+        effectiveMiles,
+        effectivePaceSec,
+        effectiveRuns,
+        statusClass,
+        statusLabel
+      };
+    }
+
+    function buildRunItemsHtml(runs) {
+      return runs.map((run, idx) => {
+        const rMiles = metersToMiles(run.distance);
+        const rPaceSec = rMiles > 0 ? (run.moving_time || 0) / rMiles : null;
+        const rPaceStr = formatPaceFromSecPerMile(rPaceSec);
+        const safeName = escapeHtml(run.name || `Run ${idx + 1}`);
+        const jsName = String(run.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        const actLink = `<a href="https://www.strava.com/activities/${escapeHtml(run.id)}" target="_blank" rel="noopener">Strava ↗</a>`;
+        const splitsBtn = `<button class="btn" style="padding:0.1rem 0.4rem;font-size:0.68rem;" onclick="openActivitySplits('${escapeHtml(run.id)}', '${jsName}')">Splits</button>`;
+
+        return `
+          <div class="day-run-item">
+            <div class="day-run-title">${safeName}</div>
+            <div class="day-run-meta">
+              <strong>${rMiles.toFixed(2)} mi</strong> @ ${rPaceStr}/mi • ${formatDuration(run.moving_time)}
+            </div>
+            <div class="day-run-actions">${splitsBtn}${actLink}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function buildDayContentHtml(dayInfo, showDayName = false) {
+      const p = dayInfo.planned;
+      if (!p) return "";
+
+      const isTueThu = dayInfo.dayName === "Tuesday" || dayInfo.dayName === "Thursday";
+      const wuNote = isTueThu
+        ? `<div class="cell-planned-note">${appState.includeWarmup ? `Total w/ WU+CD: ${p.total_mi} mi` : `Workout only: ${p.workout_mi} mi (+2 mi WU/CD)`}</div>`
+        : "";
+
+      const st = getDayPlanStatus(dayInfo);
+      let actualHtml = "";
+      if (st.effectiveMiles > 0) {
+        const paceStr = formatPaceFromSecPerMile(st.effectivePaceSec);
+        const statusBadgeCls = st.statusClass === "hit" ? "badge-green" : "badge-amber";
+        const isOpen = appState.expandedDayKeys.has(dayInfo.dateYMD);
+
+        const summaryLabel = st.effectiveRuns.length > 1
+          ? `<strong>${st.effectiveRuns.length} runs</strong> — click to show all`
+          : escapeHtml((st.effectiveRuns[0] && st.effectiveRuns[0].name) || "Run details");
+
+        actualHtml = `
+          <div class="actual-box ${st.statusClass}">
+            <div class="actual-header">
+              <strong>${st.effectiveMiles.toFixed(2)} mi @ ${paceStr}/mi</strong>
+              <span class="badge ${statusBadgeCls}" style="font-size:0.62rem;">${st.statusLabel}</span>
+            </div>
+            <details class="day-runs-details" ${isOpen ? "open" : ""} ontoggle="toggleDayRunDetails('${escapeHtml(dayInfo.dateYMD)}', this.open)">
+              <summary class="day-runs-summary">
+                <span class="day-runs-chevron">▸</span>
+                <span class="day-runs-summary-text">${summaryLabel}</span>
+              </summary>
+              <div class="day-runs-list">
+                ${buildRunItemsHtml(st.effectiveRuns)}
+              </div>
+            </details>
+          </div>
+        `;
+      } else {
+        actualHtml = `
+          <div class="actual-box ${st.statusClass}">
+            <span>${st.statusLabel}</span>
+          </div>
+        `;
+      }
+
+      const dateText = showDayName
+        ? `${dayInfo.dayName.slice(0, 3)} • ${formatShortDate(dayInfo.dateYMD)}`
+        : formatShortDate(dayInfo.dateYMD);
+
+      return `
+        <div class="cell-date">
+          <span>${dateText}</span>
+          ${dayInfo.isToday ? '<span class="badge badge-strava">TODAY</span>' : ''}
+        </div>
+        <div class="cell-planned">${escapeHtml(p.description)}</div>
+        ${wuNote}
+        ${actualHtml}
+      `;
+    }
+
+    function renderCalendarView(ctx) {
+      const cal = ctx.calendarModel;
+      const toolbar = document.getElementById("calendarToolbar");
+      const tbody = document.getElementById("calendarBody");
+      const mobileEl = document.getElementById("calendarMobileList");
+      if (!toolbar || !tbody || !mobileEl) return;
+
+      const latestRun = [...ctx.runs]
+        .sort((a, b) => (b.start_date_local || b.start_date || "").localeCompare(a.start_date_local || a.start_date || ""))[0];
+      const latestYM = latestRun ? (latestRun.start_date_local || latestRun.start_date || "").slice(0, 7) : null;
+      const showJumpLatest = cal.monthRunCount === 0 && latestYM && latestYM !== cal.monthYM;
+
+      const optionsHtml = cal.monthOptions.map(ym => `
+        <option value="${ym}" ${ym === cal.monthYM ? "selected" : ""}>${escapeHtml(getMonthLabel(ym))}</option>
+      `).join("");
+
+      const planSummaryPart = ctx.hasPlan && cal.monthPlannedMiles > 0
+        ? ` • Plan: <strong>${cal.monthPlannedMiles.toFixed(1)} mi</strong>`
+        : "";
+
+      toolbar.innerHTML = `
+        <div class="cal-nav-group">
+          <button class="btn" type="button" onclick="shiftCalendarMonth(-1)">‹ Prev</button>
+          <select id="calendarMonthSelect" class="week-select" aria-label="Select Month" onchange="selectCalendarMonth(this.value)">
+            ${optionsHtml}
+          </select>
+          <button class="btn" type="button" onclick="goToCurrentMonth()">Today</button>
+          <button class="btn" type="button" onclick="shiftCalendarMonth(1)">Next ›</button>
+          ${showJumpLatest ? `<button class="btn btn-strava" type="button" onclick="selectCalendarMonth('${latestYM}')">Jump to Latest Run (${escapeHtml(getMonthLabel(latestYM))})</button>` : ""}
+        </div>
+        <div class="cal-summary-group">
+          <span><strong>${cal.monthMiles.toFixed(1)} mi</strong> • ${cal.monthRunCount} run${cal.monthRunCount === 1 ? "" : "s"}${planSummaryPart}</span>
+        </div>
+      `;
+
+      let rowsHtml = "";
+      cal.monthWeeks.forEach(week => {
+        const dayCellsHtml = week.days.map(d => {
+          const dayNum = Number(d.dateYMD.slice(8, 10));
+          const tdClasses = [
+            !d.inMonth ? "cal-out-month" : "",
+            d.isToday ? "cal-today" : ""
+          ].filter(Boolean).join(" ");
+
+          let planChipHtml = "";
+          if (d.planned) {
+            const st = getDayPlanStatus(d);
+            const badgeCls = st.statusClass === "hit"
+              ? "badge-green"
+              : (st.statusClass === "partial" ? "badge-amber" : (st.statusClass === "missed" ? "badge-red" : "badge-blue"));
+            planChipHtml = `
+              <div class="cal-plan-chip">
+                <div class="cal-plan-chip-top">
+                  <strong>${escapeHtml(d.planned.type || "Workout")}</strong>
+                  <span class="badge ${badgeCls}" style="font-size:0.58rem;padding:0.08rem 0.32rem;">${st.statusLabel}</span>
+                </div>
+                <div>${escapeHtml(d.planned.description)}</div>
+              </div>
+            `;
+          }
+
+          let runsHtml = "";
+          if (d.runs.length > 0) {
+            if (d.runs.length === 1) {
+              runsHtml = `<div class="cal-runs-stack">${buildRunItemsHtml(d.runs)}</div>`;
+            } else {
+              const calDetailKey = `cal:${d.dateYMD}`;
+              const isOpen = appState.expandedDayKeys.has(calDetailKey);
+              runsHtml = `
+                <details class="day-runs-details" ${isOpen ? "open" : ""} ontoggle="toggleDayRunDetails('${escapeHtml(calDetailKey)}', this.open)">
+                  <summary class="day-runs-summary">
+                    <span class="day-runs-chevron">▸</span>
+                    <span class="day-runs-summary-text"><strong>${d.runs.length} runs</strong> (${d.actualMiles.toFixed(1)} mi)</span>
+                  </summary>
+                  <div class="day-runs-list">
+                    ${buildRunItemsHtml(d.runs)}
+                  </div>
+                </details>
+              `;
+            }
+          }
+
+          return `
+            <td class="${tdClasses}">
+              <div class="cal-day-head">
+                <span class="cal-day-num">
+                  ${dayNum}
+                  ${d.isToday ? '<span class="badge badge-strava" style="font-size:0.56rem;padding:0.06rem 0.3rem;">TODAY</span>' : ""}
+                </span>
+                ${d.actualMiles > 0 ? `<span class="badge badge-blue" style="font-size:0.6rem;">${d.actualMiles.toFixed(1)} mi</span>` : ""}
+              </div>
+              ${planChipHtml}
+              ${runsHtml}
+            </td>
+          `;
+        }).join("");
+
+        const pctHtml = week.weekPlannedMiles > 0
+          ? `<div style="font-size:0.7rem;color:var(--text-muted);">Plan: ${week.weekPlannedMiles.toFixed(1)} mi (${Math.round((week.weekMiles / week.weekPlannedMiles) * 100)}%)</div>`
+          : "";
+        const weekInspectArg = week.planWeek
+          ? `'plan:${week.planWeek.week_number}'`
+          : `'cal:${week.startYMD}'`;
+
+        rowsHtml += `
+          <tr>
+            ${dayCellsHtml}
+            <td>
+              <div class="cal-week-total">
+                <div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;">${escapeHtml(week.shortLabel)}</div>
+                <div class="cal-week-miles">${week.weekMiles.toFixed(1)} mi</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">${week.weekRunCount} run${week.weekRunCount === 1 ? "" : "s"}</div>
+                ${pctHtml}
+                <button class="btn" style="margin-top:0.25rem;padding:0.18rem 0.45rem;font-size:0.68rem;" onclick="inspectCalendarWeek(${weekInspectArg})">
+                  Week →
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = rowsHtml;
+
+      // Mobile week-by-week cards for the selected month
+      if (appState.expandedCalendarWeeks === null) {
+        const defaultOpen = cal.monthWeeks
+          .filter(w => w.isCurrentWeek || w.weekRunCount > 0)
+          .map(w => w.startYMD);
+        appState.expandedCalendarWeeks = new Set(
+          defaultOpen.length > 0 ? defaultOpen : (cal.monthWeeks[0] ? [cal.monthWeeks[0].startYMD] : [])
+        );
+      }
+
+      mobileEl.innerHTML = cal.monthWeeks.map(week => {
+        const isOpen = appState.expandedCalendarWeeks.has(week.startYMD);
+        const activeDays = week.days.filter(d => d.runs.length > 0 || d.planned);
+        const daysCardsHtml = activeDays.length > 0
+          ? activeDays.map(d => {
+              const paceStr = formatPaceFromSecPerMile(d.actualPaceSec);
+              const planNote = d.planned
+                ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.35rem;"><strong>Plan (${escapeHtml(d.planned.type || "Workout")}):</strong> ${escapeHtml(d.planned.description)}</div>`
+                : "";
+              const runsHtml = d.runs.length > 0
+                ? `<div class="cal-runs-stack">${buildRunItemsHtml(d.runs)}</div>`
+                : `<div style="font-size:0.75rem;color:var(--text-muted);">No Strava run logged</div>`;
+              return `
+                <div class="mobile-day-card">
+                  <div class="cell-date">
+                    <span><strong>${d.dayName.slice(0, 3)}</strong> • ${formatShortDate(d.dateYMD)}</span>
+                    <span>
+                      ${d.isToday ? '<span class="badge badge-strava">TODAY</span>' : ""}
+                      ${d.actualMiles > 0 ? `<span class="badge badge-blue">${d.actualMiles.toFixed(2)} mi @ ${paceStr}/mi</span>` : ""}
+                    </span>
+                  </div>
+                  ${planNote}
+                  ${runsHtml}
+                </div>
+              `;
+            }).join("")
+          : `<div style="font-size:0.8rem;color:var(--text-muted);padding:0.45rem 0;">No runs or scheduled workouts this week.</div>`;
+
+        const cardCls = week.isCurrentWeek ? "current-week" : (week.isPastWeek ? "past-week" : "");
+        const rightMeta = week.weekPlannedMiles > 0
+          ? `${week.weekMiles.toFixed(1)}/${week.weekPlannedMiles.toFixed(1)} mi`
+          : `${week.weekMiles.toFixed(1)} mi`;
+        const weekInspectArg = week.planWeek
+          ? `'plan:${week.planWeek.week_number}'`
+          : `'cal:${week.startYMD}'`;
+
+        return `
+          <details class="mobile-week-card ${cardCls}" ${isOpen ? "open" : ""} ontoggle="toggleCalendarWeekDetails('${escapeHtml(week.startYMD)}', this.open)">
+            <summary class="mobile-week-summary">
+              <div class="mobile-week-left">
+                <span class="mobile-week-chevron">▸</span>
+                <strong>${escapeHtml(week.shortLabel)}</strong>
+                ${week.isCurrentWeek ? '<span class="badge badge-strava">NOW</span>' : ""}
+              </div>
+              <div class="mobile-week-right">
+                <span style="color:var(--strava);">${rightMeta}</span>
+                <span class="badge badge-blue">${week.weekRunCount}r</span>
+              </div>
+            </summary>
+            <div class="mobile-week-body">
+              <div class="mobile-week-meta-row">
+                <span>${escapeHtml(week.label)}</span>
+                <button class="btn" style="padding:0.22rem 0.55rem;font-size:0.72rem;" onclick="inspectCalendarWeek(${weekInspectArg})">
+                  Week Deep-Dive →
+                </button>
+              </div>
+              ${daysCardsHtml}
+            </div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function renderMatrixCell(dayInfo) {
+      if (!dayInfo || !dayInfo.planned) return `<td>-</td>`;
+      return `<td>${buildDayContentHtml(dayInfo, false)}</td>`;
+    }
+
+    function renderMobileWeekCards(model) {
+      const container = document.getElementById("mobileWeeksList");
+      if (!container) return;
+
+      if (appState.expandedMobileWeeks === null) {
+        const cur = model.weeks.find(w => w.isCurrentWeek) || model.weeks[0];
+        appState.expandedMobileWeeks = new Set(cur ? [cur.week_number] : []);
+      }
+
+      const scheduledDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Saturday"];
+      container.innerHTML = model.weeks.map(w => {
+        const cardCls = w.isCurrentWeek ? "current-week" : (w.isPastWeek ? "past-week" : "");
+        const pct = Math.round((w.actualTotalMiles / w.summary.total_miles) * 100);
+        const badgeCls = pct >= 90 ? "badge-green" : (pct >= 50 ? "badge-amber" : (w.isPastWeek ? "badge-red" : "badge-blue"));
+        const isOpen = appState.expandedMobileWeeks.has(w.week_number);
+
+        const daysHtml = scheduledDays
+          .filter(d => w.dayMap[d] && w.dayMap[d].planned)
+          .map(d => `<div class="mobile-day-card">${buildDayContentHtml(w.dayMap[d], true)}</div>`)
+          .join("");
+
+        return `
+          <details class="mobile-week-card ${cardCls}" ${isOpen ? "open" : ""} ontoggle="toggleMobileWeekDetails(${w.week_number}, this.open)">
+            <summary class="mobile-week-summary">
+              <div class="mobile-week-left">
+                <span class="mobile-week-chevron">▸</span>
+                <strong>W${w.week_number}</strong>
+                <span>${escapeHtml(w.label)}</span>
+                ${w.isCurrentWeek ? '<span class="badge badge-strava">NOW</span>' : ''}
+              </div>
+              <div class="mobile-week-right">
+                <span style="color:var(--strava);">${w.actualTotalMiles.toFixed(1)}/${w.summary.total_miles} mi</span>
+                <span class="badge ${badgeCls}">${pct}%</span>
+              </div>
+            </summary>
+            <div class="mobile-week-body">
+              <div class="mobile-week-meta-row">
+                <span>Plan: ${w.summary.workout_miles} WO + ${w.summary.easy_miles} Easy</span>
+                <button class="btn" style="padding:0.22rem 0.55rem;font-size:0.72rem;" onclick="jumpToWeek(${w.week_number})">
+                  Week Deep-Dive →
+                </button>
+              </div>
+              ${daysHtml}
+            </div>
+          </details>
+        `;
+      }).join("");
+    }
+
+    function renderMatrixView(ctx) {
+      const tbody = document.getElementById("matrixBody");
+      const mobileEl = document.getElementById("mobileWeeksList");
+      if (!ctx.hasPlan || !ctx.planModel) {
+        if (tbody) tbody.innerHTML = "";
+        if (mobileEl) mobileEl.innerHTML = "";
+        return;
+      }
+      const model = ctx.planModel;
+      let html = "";
+
+      for (const w of model.weeks) {
+        const rowClass = w.isCurrentWeek ? "current-week" : (w.isPastWeek ? "past-week" : "");
+        const pct = Math.round((w.actualTotalMiles / w.summary.total_miles) * 100);
+        const badgeClass = pct >= 90 ? "badge-green" : (pct >= 50 ? "badge-amber" : (w.isPastWeek ? "badge-red" : "badge-blue"));
+
+        html += `
+          <tr class="${rowClass}">
+            <td style="text-align:center; font-weight:800; font-size:0.95rem;">
+              ${w.week_number}
+              ${w.isCurrentWeek ? '<div style="margin-top:0.25rem;"><span class="badge badge-strava">NOW</span></div>' : ''}
+            </td>
+            <td>
+              <div style="font-weight:700;">${w.label}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${w.week_of.slice(0, 4)}</div>
+              <button class="btn" style="margin-top:0.4rem; padding:0.2rem 0.45rem; font-size:0.68rem;" onclick="jumpToWeek(${w.week_number})">
+                Inspect →
+              </button>
+            </td>
+            ${renderMatrixCell(w.dayMap["Monday"])}
+            ${renderMatrixCell(w.dayMap["Tuesday"])}
+            ${renderMatrixCell(w.dayMap["Wednesday"])}
+            ${renderMatrixCell(w.dayMap["Thursday"])}
+            ${renderMatrixCell(w.dayMap["Saturday"])}
+            <td>
+              <div style="font-size:0.75rem; color:var(--text-muted);">Planned:</div>
+              <div style="font-size:0.78rem; margin-bottom:0.4rem;">
+                3 WO = <strong>${w.summary.workout_miles}</strong><br/>
+                Easy = <strong>${w.summary.easy_miles}</strong><br/>
+                Total = <strong>${w.summary.total_miles} mi</strong>
+              </div>
+              <div style="border-top:1px solid var(--border); padding-top:0.35rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.73rem; color:var(--text-muted);">Strava:</span>
+                  <span class="badge ${badgeClass}">${pct}%</span>
+                </div>
+                <div style="font-size:0.88rem; font-weight:800; color:var(--strava); margin-top:0.1rem;">
+                  ${w.actualTotalMiles.toFixed(1)} / ${w.summary.total_miles} mi
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-muted);">
+                  WO: ${w.actualWorkoutMiles.toFixed(1)} • Easy: ${w.actualEasyMiles.toFixed(1)}
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      tbody.innerHTML = html;
+      renderMobileWeekCards(model);
+    }
+
+    function buildGenericWeekDescriptor(startYMD, ctx) {
+      const endYMD = addDays(startYMD, 6);
+      const dayMap = {};
+      let actualTotalMiles = 0;
+      DAY_NAMES.forEach((dayName, i) => {
+        const dateYMD = addDays(startYMD, i);
+        const dayRuns = [...(ctx.runsByDate[dateYMD] || [])];
+        const actualMiles = dayRuns.reduce((s, r) => s + metersToMiles(r.distance), 0);
+        const daySec = dayRuns.reduce((s, r) => s + (r.moving_time || 0), 0);
+        actualTotalMiles += actualMiles;
+        dayMap[dayName] = {
+          dayName,
+          dateYMD,
+          planned: null,
+          targetMi: 0,
+          runs: dayRuns,
+          actualMiles,
+          actualMovingSec: daySec,
+          actualPaceSec: actualMiles > 0 ? daySec / actualMiles : null,
+          isPast: dateYMD < ctx.todayYMD,
+          isToday: dateYMD === ctx.todayYMD
+        };
+      });
+      return {
+        weekKey: `cal:${startYMD}`,
+        startYMD,
+        endYMD,
+        label: `${formatShortDate(startYMD)} – ${formatShortDate(endYMD)}`,
+        isCurrentWeek: ctx.todayYMD >= startYMD && ctx.todayYMD <= endYMD,
+        actualTotalMiles,
+        summary: null,
+        dayMap
+      };
+    }
+
+    function renderWeekDeepDive(ctx) {
+      const select = document.getElementById("weekSelect");
+      let weekEntries = [];
+
+      if (ctx.hasPlan && ctx.planModel) {
+        weekEntries = ctx.planModel.weeks.map(w => ({
+          key: `plan:${w.week_number}`,
+          label: `Week ${w.week_number} — Week of ${w.label} (${w.week_of})${w.isCurrentWeek ? " ★ CURRENT WEEK" : ""}`,
+          data: w
+        }));
+      }
+
+      // Add Mon-Sun weeks that have runs or belong to the current week
+      const existingStarts = new Set(weekEntries.map(e => e.data.startYMD));
+      const weekStarts = new Set([getMondayOfYMD(ctx.todayYMD)]);
+      ctx.runs.forEach(r => {
+        const ymd = (r.start_date_local || r.start_date || "").slice(0, 10);
+        if (ymd) weekStarts.add(getMondayOfYMD(ymd));
+      });
+      Array.from(weekStarts).sort().reverse().forEach(monYMD => {
+        if (!existingStarts.has(monYMD)) {
+          const w = buildGenericWeekDescriptor(monYMD, ctx);
+          weekEntries.push({
+            key: w.weekKey,
+            label: `Week of ${w.label} (${w.startYMD})${w.isCurrentWeek ? " ★ CURRENT WEEK" : ""} — ${w.actualTotalMiles.toFixed(1)} mi`,
+            data: w
+          });
+        }
+      });
+
+      const validKeys = new Set(weekEntries.map(e => e.key));
+      if (!appState.selectedWeekKey || !validKeys.has(appState.selectedWeekKey)) {
+        const curPlan = ctx.hasPlan && weekEntries.find(e => e.key.startsWith("plan:") && e.data.isCurrentWeek);
+        const curCal = weekEntries.find(e => e.data.isCurrentWeek);
+        appState.selectedWeekKey = (curPlan || curCal || weekEntries[0]).key;
+      }
+
+      select.innerHTML = weekEntries.map(e => `
+        <option value="${escapeHtml(e.key)}" ${e.key === appState.selectedWeekKey ? "selected" : ""}>
+          ${escapeHtml(e.label)}
+        </option>
+      `).join("");
+
+      const selectedEntry = weekEntries.find(e => e.key === appState.selectedWeekKey) || weekEntries[0];
+      const week = selectedEntry.data;
+      document.getElementById("weekFocusSummary").innerHTML = week.summary
+        ? `Planned: <strong>${week.summary.total_miles} mi</strong> (${week.summary.workout_miles} WO + ${week.summary.easy_miles} Easy) • Actual Logged: <strong style="color:var(--strava);">${week.actualTotalMiles.toFixed(2)} mi</strong>`
+        : `Total Logged This Week: <strong style="color:var(--strava);">${week.actualTotalMiles.toFixed(2)} mi</strong>`;
+
+      const grid = document.getElementById("weekDaysGrid");
+      grid.innerHTML = DAY_NAMES.map(dayName => {
+        const d = week.dayMap[dayName];
+        const p = d.planned;
+        const plannedDesc = p ? p.description : (ctx.hasPlan ? "Rest / Cross-Training Day" : "Open Training Day");
+        const targetMiText = p ? `${d.targetMi} mi planned` : (ctx.hasPlan ? "0 mi planned" : "No workout target");
+
+        const dayRunsSorted = d.runs
+          .slice()
+          .sort((a, b) => (a.start_date_local || "").localeCompare(b.start_date_local || ""));
+
+        const runsHtml = dayRunsSorted.length > 0
+          ? dayRunsSorted.map(r => {
+              const mi = metersToMiles(r.distance);
+              const pace = formatPaceFromSecPerMile(mi > 0 ? (r.moving_time || 0) / mi : null);
+              const jsName = String(r.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+              return `
+                <div class="actual-box hit" style="margin-top:0.5rem;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.4rem;">
+                    <strong style="overflow-wrap:anywhere; word-break:break-word;">${escapeHtml(r.name || "Run")}</strong>
+                    <span class="badge badge-green" style="flex-shrink:0;">${mi.toFixed(2)} mi</span>
+                  </div>
+                  <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.25rem;">
+                    ⏱️ Pace: <strong>${pace}/mi</strong> • Time: ${formatDuration(r.moving_time)}
+                    ${r.total_elevation_gain ? ` • ⛰️ ${Math.round(r.total_elevation_gain * 3.28084)} ft` : ""}
+                    ${r.average_heartrate ? ` • ❤️ ${Math.round(r.average_heartrate)} bpm` : ""}
+                  </div>
+                  <div style="margin-top:0.45rem; display:flex; gap:0.5rem;">
+                    <button class="btn" style="padding:0.25rem 0.55rem; font-size:0.74rem;" onclick="openActivitySplits('${escapeHtml(r.id)}', '${jsName}')">
+                      📊 View Mile / Lap Splits
+                    </button>
+                    <a class="btn" style="padding:0.25rem 0.55rem; font-size:0.74rem;" href="https://www.strava.com/activities/${escapeHtml(r.id)}" target="_blank" rel="noopener">
+                      Open in Strava ↗
+                    </a>
+                  </div>
+                </div>
+              `;
+            }).join("")
+          : `<div class="actual-box ${p ? (d.isPast ? 'missed' : 'upcoming') : 'upcoming'}">
+               ${p ? (d.isPast ? "No Strava run logged on this date" : "Upcoming scheduled workout") : "No Strava run logged"}
+             </div>`;
+
+        return `
+          <div class="day-card ${d.isToday ? 'today' : ''}">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                <strong>${dayName} • ${formatShortDate(d.dateYMD)}</strong>
+                <span class="badge ${p ? 'badge-blue' : 'badge-amber'}">${p ? escapeHtml(p.type) : (dayRunsSorted.length > 0 ? 'Logged' : 'Rest')}</span>
+              </div>
+              <div style="font-size:0.9rem; font-weight:600; color:var(--text);">${escapeHtml(plannedDesc)}</div>
+              <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.15rem;">${targetMiText}${p && p.target_pace ? ` • Target Pace: ${escapeHtml(p.target_pace)}` : ''}</div>
+            </div>
+            <div>${runsHtml}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderActivitiesList(ctx) {
+      const tbody = document.getElementById("allActivitiesBody");
+      const sorted = [...ctx.runs].sort((a, b) => (b.start_date_local || "").localeCompare(a.start_date_local || ""));
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--text-muted);">No runs found in your synced Strava activities from the last 12 months.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = sorted.map(r => {
+        const ymd = (r.start_date_local || "").slice(0, 10);
+        const dt = ymd ? parseYMD(ymd) : new Date();
+        const dayStr = dt.toLocaleDateString("en-US", { weekday: "short" });
+        const mi = metersToMiles(r.distance);
+        const pace = formatPaceFromSecPerMile((r.moving_time || 0) / mi);
+        const elevFt = r.total_elevation_gain ? `${Math.round(r.total_elevation_gain * 3.28084)} ft` : "-";
+        const hr = r.average_heartrate ? `${Math.round(r.average_heartrate)} bpm` : "-";
+        const jsName = String(r.name || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+        return `
+          <tr>
+            <td>${escapeHtml(ymd)}</td>
+            <td>${escapeHtml(dayStr)}</td>
+            <td><strong>${escapeHtml(r.name || "Run")}</strong></td>
+            <td><span class="badge badge-blue">${escapeHtml(r.sport_type || r.type || "Run")}</span></td>
+            <td><strong>${mi.toFixed(2)} mi</strong></td>
+            <td>${pace} /mi</td>
+            <td>${formatDuration(r.moving_time)}</td>
+            <td>${elevFt}</td>
+            <td>${hr}</td>
+            <td>
+              <button class="btn" style="padding:0.2rem 0.5rem; font-size:0.74rem;" onclick="openActivitySplits('${escapeHtml(r.id)}', '${jsName}')">Splits</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    window.jumpToWeek = function(weekNum) {
+      appState.selectedWeekNumber = weekNum;
+      appState.selectedWeekKey = `plan:${weekNum}`;
+      switchTab("week");
+      renderAll();
+    };
+
+    window.inspectCalendarWeek = function(weekKey) {
+      appState.selectedWeekKey = weekKey;
+      switchTab("week");
+      renderAll();
+    };
+
+    window.openActivitySplits = async function(actId, actName) {
+      const dialog = document.getElementById("activityDetailDialog");
+      const title = document.getElementById("detailDialogTitle");
+      const body = document.getElementById("detailDialogBody");
+      title.textContent = `Splits & Laps: ${actName}`;
+      body.innerHTML = `<p style="color:var(--text-muted);">Fetching detailed lap & mile splits from Strava...</p>`;
+      dialog.showModal();
+
+      try {
+        const res = await fetch(`/api/activity/${actId}`);
+        const data = await res.json();
+        if (!data.ok || !data.activity) {
+          body.innerHTML = `<p style="color:var(--red);">Could not load splits: ${data.error || "Unknown error"}</p>`;
+          return;
+        }
+        const act = data.activity;
+        const laps = act.laps || [];
+        const splits = act.splits_standard || [];
+
+        let html = "";
+        if (laps.length > 0) {
+          html += `<h4 style="margin-bottom:0.4rem;">Device Laps (Tuesday Track Intervals & Tempo Segments)</h4>`;
+          html += `<div class="table-scroll"><table class="splits-table"><thead><tr><th>Lap</th><th>Distance</th><th>Moving Time</th><th>Pace</th><th>Avg HR</th></tr></thead><tbody>`;
+          laps.forEach((lap, i) => {
+            const mi = metersToMiles(lap.distance);
+            const pace = formatPaceFromSecPerMile((lap.moving_time || 0) / mi);
+            const meters = Math.round(lap.distance || 0);
+            html += `<tr>
+              <td>#${i + 1} (${lap.name || 'Lap'})</td>
+              <td>${mi.toFixed(2)} mi <span style="color:var(--text-muted);">(${meters}m)</span></td>
+              <td>${formatDuration(lap.moving_time)}</td>
+              <td><strong>${pace} /mi</strong></td>
+              <td>${lap.average_heartrate ? Math.round(lap.average_heartrate) + ' bpm' : '-'}</td>
+            </tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+
+        if (splits.length > 0) {
+          html += `<h4 style="margin-top:1.25rem; margin-bottom:0.4rem;">Mile Splits</h4>`;
+          html += `<div class="table-scroll"><table class="splits-table"><thead><tr><th>Mile</th><th>Distance</th><th>Pace</th><th>Elevation Diff</th><th>Avg HR</th></tr></thead><tbody>`;
+          splits.forEach(sp => {
+            const mi = metersToMiles(sp.distance);
+            const pace = formatPaceFromSecPerMile((sp.moving_time || 0) / mi);
+            html += `<tr>
+              <td>Mile ${sp.split}</td>
+              <td>${mi.toFixed(2)} mi</td>
+              <td><strong>${pace} /mi</strong></td>
+              <td>${sp.elevation_difference != null ? Math.round(sp.elevation_difference * 3.28084) + ' ft' : '-'}</td>
+              <td>${sp.average_heartrate ? Math.round(sp.average_heartrate) + ' bpm' : '-'}</td>
+            </tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+
+        body.innerHTML = html || `<p>No split data available for this activity.</p>`;
+      } catch (err) {
+        body.innerHTML = `<p style="color:var(--red);">Error loading splits: ${err.message}</p>`;
+      }
+    };
+
+    async function triggerSync() {
+      const btn = document.getElementById("btnSyncNow");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ Syncing...";
+      }
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        const data = await res.json();
+        if (data.ok) {
+          appState.activities = data.activities || [];
+          appState.synced_at = data.synced_at;
+          renderAll();
+        } else {
+          alert("Strava Sync Error: " + (data.error || "Unknown error"));
+        }
+      } catch (e) {
+        alert("Failed to sync: " + e.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "🔄 Sync Strava";
+        }
+      }
+    }
+
+    function switchTab(viewName) {
+      appState.activeTab = viewName;
+      document.querySelectorAll(".tab-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.view === viewName);
+      });
+      document.getElementById("viewCalendar").style.display = viewName === "calendar" ? "block" : "none";
+      document.getElementById("viewMatrix").style.display = viewName === "matrix" ? "block" : "none";
+      document.getElementById("viewWeek").style.display = viewName === "week" ? "block" : "none";
+      document.getElementById("viewActivities").style.display = viewName === "activities" ? "block" : "none";
+    }
+
+    function renderAll() {
+      const unlocked = renderOnboardingAndHeader();
+      if (!unlocked) return;
+
+      const ctx = buildDashboardContext();
+      switchTab(appState.activeTab || "calendar");
+      renderKPIs(ctx);
+      renderMileageChart(ctx);
+      renderPaceChart(ctx);
+      renderCalendarView(ctx);
+      renderMatrixView(ctx);
+      renderWeekDeepDive(ctx);
+      renderActivitiesList(ctx);
+    }
+
+    function syncThemeButton() {
+      const btn = document.getElementById("btnDarkTheme");
+      if (!btn) return;
+      const isDark = document.documentElement.dataset.theme === "dark";
+      btn.classList.toggle("btn-theme-active", isDark);
+      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    }
+
+    function toggleTheme() {
+      const nextIsDark = document.documentElement.dataset.theme !== "dark";
+      if (nextIsDark) {
+        document.documentElement.dataset.theme = "dark";
+      } else {
+        delete document.documentElement.dataset.theme;
+      }
+      try {
+        localStorage.setItem("shipshape_theme", nextIsDark ? "dark" : "light");
+      } catch (e) {}
+      syncThemeButton();
+    }
+
+    async function init() {
+      syncThemeButton();
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.view));
+      });
+
+      document.getElementById("planFileInput").addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleFileUpload(e.target.files[0]);
+          e.target.value = "";
+        }
+      });
+
+      document.getElementById("chkIncludeWarmup").addEventListener("change", (e) => {
+        appState.includeWarmup = e.target.checked;
+        renderAll();
+      });
+
+      document.getElementById("weekSelect").addEventListener("change", (e) => {
+        appState.selectedWeekKey = e.target.value;
+        if (e.target.value.startsWith("plan:")) {
+          appState.selectedWeekNumber = Number(e.target.value.slice(5));
+        }
+        renderAll();
+      });
+
+      const planDialog = document.getElementById("planPdfDialog");
+      document.getElementById("btnClosePlanPdf").addEventListener("click", () => planDialog.close());
+      planDialog.addEventListener("click", (e) => { if (e.target === planDialog) planDialog.close(); });
+
+      const detailDialog = document.getElementById("activityDetailDialog");
+      document.getElementById("btnCloseDetailDialog").addEventListener("click", () => detailDialog.close());
+      detailDialog.addEventListener("click", (e) => { if (e.target === detailDialog) detailDialog.close(); });
+
+      const res = await fetch("/api/state");
+      const state = await res.json();
+      appState = {
+        ...appState,
+        ...state
+      };
+
+      if (!appState.calendarMonth) {
+        appState.calendarMonth = getTodayYMD().slice(0, 7);
+      }
+
+      const model = buildComparisonModel();
+      const cur = model && model.weeks.find(w => w.isCurrentWeek);
+      if (cur) {
+        appState.selectedWeekNumber = cur.week_number;
+        appState.selectedWeekKey = `plan:${cur.week_number}`;
+      }
+
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
