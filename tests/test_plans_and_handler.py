@@ -215,7 +215,7 @@ class PlansAndHandlerTests(unittest.TestCase):
         code, hdrs, _ = _dispatch_http("GET", "/")
         self.assertEqual(code, 200)
         self.assertEqual(hdrs.get("x-content-type-options"), "nosniff")
-        self.assertEqual(hdrs.get("x-frame-options"), "DENY")
+        self.assertEqual(hdrs.get("x-frame-options"), "SAMEORIGIN")
         self.assertEqual(hdrs.get("referrer-policy"), "strict-origin-when-cross-origin")
 
         # 2. Activity ID sanitization rejects traversal attacks

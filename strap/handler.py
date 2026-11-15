@@ -66,7 +66,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
 
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
         proto = self.headers.get("X-Forwarded-Proto", "http")
         secure_attr = "; Secure" if proto == "https" else ""
