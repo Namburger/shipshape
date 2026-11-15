@@ -1302,6 +1302,89 @@
         font-size: 0.76rem;
       }
     }
+
+    .overview-dashboard.user-collapsed {
+      display: none !important;
+    }
+
+    .overview-toggle-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin: 0.5rem 0 0.25rem;
+    }
+
+    .btn-overview-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.32rem 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .btn-overview-toggle:hover {
+      background: var(--bg-card-hover);
+      color: var(--text);
+      border-color: var(--brand);
+    }
+
+    /* Short viewports / Mobile landscape mode optimizations */
+    @media (max-height: 600px) {
+      header {
+        position: static !important;
+        padding: 0.35rem 0 !important;
+      }
+
+      .brand-sub {
+        display: none !important;
+      }
+
+      .ship-logo {
+        width: 28px !important;
+        height: 28px !important;
+      }
+
+      .brand-title {
+        font-size: 0.95rem !important;
+      }
+
+      .header-controls .btn,
+      .header-actions .btn,
+      .header-actions .athlete-pill {
+        padding: 0.22rem 0.45rem !important;
+        font-size: 0.72rem !important;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 600px) {
+      .overview-dashboard:not(.user-expanded) {
+        display: none !important;
+      }
+
+      /* Make desktop calendar table visible on phones in landscape */
+      #calendarDesktopWrap,
+      #matrixDesktopWrap {
+        display: block !important;
+      }
+
+      #calendarMobileList,
+      .mobile-weeks-list {
+        display: none !important;
+      }
+
+      table.cal-grid td {
+        min-height: 72px;
+        height: auto;
+        padding: 0.3rem 0.35rem;
+      }
+    }
   </style>
 </head>
 
@@ -1414,94 +1497,106 @@
 
     <!-- DASHBOARD CONTENT: Shown once Strava is connected (with or without a Training Plan PDF) -->
     <div id="dashboardContent" style="display: none;">
-      <!-- Optional Plan Upsell Banner (shown when authenticated without a plan PDF) -->
-      <div class="plan-optional-banner" id="planOptionalBanner" style="display: none;">
-        <div class="plan-optional-copy">
-          <strong>📄 Showing your Strava runs without a training plan</strong>
-          <span>Upload a Ship Shape training plan PDF anytime to overlay planned workouts, target paces, adherence %,
-            and the 16-week matrix.</span>
-        </div>
-        <button class="btn" type="button" onclick="document.getElementById('planFileInput').click()">
-          📤 Upload Training Plan PDF
+      <!-- Overview Dashboard Collapse / Expand Toggle Bar -->
+      <div class="overview-toggle-bar">
+        <button class="btn btn-overview-toggle" id="btnToggleOverview" type="button" onclick="toggleOverviewDashboard()" title="Toggle Overview KPIs & Charts">
+          <span>📊</span>
+          <span id="overviewToggleLabel">Overview & Charts</span>
+          <span id="overviewToggleArrow">▲</span>
         </button>
       </div>
 
-      <!-- Equivalent Race Performances from uploaded plan PDF -->
-      <div class="equivalents-bar" id="equivalentsBar" style="display: none;">
-        <div style="font-weight: 700; color: var(--text-muted);">
-          🎯 Ship Shape Target Equivalents:
-        </div>
-        <div class="equiv-items" id="equivItems">
-          <div class="equiv-item"><span class="label">5K:</span><strong>—</strong></div>
-          <div class="equiv-item"><span class="label">10K:</span><strong>—</strong></div>
-          <div class="equiv-item"><span class="label">Half Marathon:</span><strong>—</strong></div>
-          <div class="equiv-item goal"><span class="label">Marathon Goal:</span><strong>—</strong></div>
-          <div class="equiv-item"><span class="label">Easy Pace:</span><strong>—</strong></div>
-          <div class="equiv-item"><span class="label">Tempo Pace:</span><strong>—</strong></div>
-        </div>
-      </div>
-
-      <!-- KPI Cards -->
-      <section class="kpi-grid">
-        <div class="card">
-          <div class="kpi-label">
-            <span id="kpi1Label">Current Week</span>
-            <span class="badge badge-strava" id="kpi1Badge">0%</span>
+      <!-- Collapsible Overview Dashboard: Equivalents, KPIs & Charts -->
+      <div id="overviewDashboard" class="overview-dashboard">
+        <!-- Optional Plan Upsell Banner (shown when authenticated without a plan PDF) -->
+        <div class="plan-optional-banner" id="planOptionalBanner" style="display: none;">
+          <div class="plan-optional-copy">
+            <strong>📄 Showing your Strava runs without a training plan</strong>
+            <span>Upload a Ship Shape training plan PDF anytime to overlay planned workouts, target paces, adherence %,
+              and the 16-week matrix.</span>
           </div>
-          <div class="kpi-value" id="kpi1Value">0.0 mi</div>
-          <div class="progress-track">
-            <div class="progress-fill" id="kpi1Bar" style="width: 0%;"></div>
-          </div>
-          <div class="kpi-sub" id="kpi1Sub">—</div>
+          <button class="btn" type="button" onclick="document.getElementById('planFileInput').click()">
+            📤 Upload Training Plan PDF
+          </button>
         </div>
 
-        <div class="card">
-          <div class="kpi-label">
-            <span id="kpi2Label">Mileage Summary</span>
-            <span class="badge badge-green" id="kpi2Badge">--</span>
+        <!-- Equivalent Race Performances from uploaded plan PDF -->
+        <div class="equivalents-bar" id="equivalentsBar" style="display: none;">
+          <div style="font-weight: 700; color: var(--text-muted);">
+            🎯 Ship Shape Target Equivalents:
           </div>
-          <div class="kpi-value" id="kpi2Value">0.0 mi</div>
-          <div class="kpi-sub" id="kpi2Sub">—</div>
+          <div class="equiv-items" id="equivItems">
+            <div class="equiv-item"><span class="label">5K:</span><strong>—</strong></div>
+            <div class="equiv-item"><span class="label">10K:</span><strong>—</strong></div>
+            <div class="equiv-item"><span class="label">Half Marathon:</span><strong>—</strong></div>
+            <div class="equiv-item goal"><span class="label">Marathon Goal:</span><strong>—</strong></div>
+            <div class="equiv-item"><span class="label">Easy Pace:</span><strong>—</strong></div>
+            <div class="equiv-item"><span class="label">Tempo Pace:</span><strong>—</strong></div>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="kpi-label">
-            <span id="kpi3Label">3-Workout vs. Easy Split</span>
-            <span class="badge badge-blue" id="kpi3Badge">Tue/Thu/Sat vs Easy</span>
+        <!-- KPI Cards -->
+        <section class="kpi-grid">
+          <div class="card">
+            <div class="kpi-label">
+              <span id="kpi1Label">Current Week</span>
+              <span class="badge badge-strava" id="kpi1Badge">0%</span>
+            </div>
+            <div class="kpi-value" id="kpi1Value">0.0 mi</div>
+            <div class="progress-track">
+              <div class="progress-fill" id="kpi1Bar" style="width: 0%;"></div>
+            </div>
+            <div class="kpi-sub" id="kpi1Sub">—</div>
           </div>
-          <div class="kpi-value" id="kpi3Value">0.0 / 0.0 mi</div>
-          <div class="kpi-sub" id="kpi3Sub">—</div>
-        </div>
 
-        <div class="card">
-          <div class="kpi-label">
-            <span id="kpi4Label">Average Pace</span>
-            <span class="badge badge-amber" id="kpi4Badge">Last 12 Months</span>
+          <div class="card">
+            <div class="kpi-label">
+              <span id="kpi2Label">Mileage Summary</span>
+              <span class="badge badge-green" id="kpi2Badge">--</span>
+            </div>
+            <div class="kpi-value" id="kpi2Value">0.0 mi</div>
+            <div class="kpi-sub" id="kpi2Sub">—</div>
           </div>
-          <div class="kpi-value" id="kpi4Value">--:-- /mi</div>
-          <div class="kpi-sub" id="kpi4Sub">—</div>
+
+          <div class="card">
+            <div class="kpi-label">
+              <span id="kpi3Label">3-Workout vs. Easy Split</span>
+              <span class="badge badge-blue" id="kpi3Badge">Tue/Thu/Sat vs Easy</span>
+            </div>
+            <div class="kpi-value" id="kpi3Value">0.0 / 0.0 mi</div>
+            <div class="kpi-sub" id="kpi3Sub">—</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">
+              <span id="kpi4Label">Average Pace</span>
+              <span class="badge badge-amber" id="kpi4Badge">Last 12 Months</span>
+            </div>
+            <div class="kpi-value" id="kpi4Value">--:-- /mi</div>
+            <div class="kpi-sub" id="kpi4Sub">—</div>
+          </div>
+        </section>
+
+        <!-- Weekly Mileage Progression Chart -->
+        <div class="section-header">
+          <div class="section-title" id="mileageSectionTitle">📈 Weekly Mileage Progression</div>
+          <div class="chart-legend" id="mileageChartLegend"></div>
         </div>
-      </section>
+        <div class="card chart-wrapper">
+          <div id="mileageChartContainer" style="min-width: 820px; height: 230px;"></div>
+        </div>
+        <div class="mobile-scroll-hint">← Swipe horizontally to view all weeks →</div>
 
-      <!-- Weekly Mileage Progression Chart -->
-      <div class="section-header">
-        <div class="section-title" id="mileageSectionTitle">📈 Weekly Mileage Progression</div>
-        <div class="chart-legend" id="mileageChartLegend"></div>
+        <!-- Pace Progression Line Chart -->
+        <div class="section-header">
+          <div class="section-title" id="paceSectionTitle">⏱️ Pace Progression</div>
+          <div class="chart-legend" id="paceChartLegend"></div>
+        </div>
+        <div class="card chart-wrapper">
+          <div id="paceChartContainer" style="min-width: 960px; height: 340px;"></div>
+        </div>
+        <div class="mobile-scroll-hint" id="paceScrollHint">← Swipe horizontally to view pace progression →</div>
       </div>
-      <div class="card chart-wrapper">
-        <div id="mileageChartContainer" style="min-width: 820px; height: 230px;"></div>
-      </div>
-      <div class="mobile-scroll-hint">← Swipe horizontally to view all weeks →</div>
-
-      <!-- Pace Progression Line Chart -->
-      <div class="section-header">
-        <div class="section-title" id="paceSectionTitle">⏱️ Pace Progression</div>
-        <div class="chart-legend" id="paceChartLegend"></div>
-      </div>
-      <div class="card chart-wrapper">
-        <div id="paceChartContainer" style="min-width: 960px; height: 340px;"></div>
-      </div>
-      <div class="mobile-scroll-hint" id="paceScrollHint">← Swipe horizontally to view pace progression →</div>
 
       <!-- Schedule View Switcher -->
       <div class="controls-bar">
@@ -3823,6 +3918,7 @@
       renderMatrixView(ctx);
       renderWeekDeepDive(ctx);
       renderActivitiesList(ctx);
+      updateOverviewToggleUI();
     }
 
     function syncThemeButton() {
@@ -3831,6 +3927,34 @@
       const isDark = document.documentElement.dataset.theme === "dark";
       btn.classList.toggle("btn-theme-active", isDark);
       btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+    }
+
+    function updateOverviewToggleUI() {
+      const container = document.getElementById("overviewDashboard");
+      const label = document.getElementById("overviewToggleLabel");
+      const arrow = document.getElementById("overviewToggleArrow");
+      if (!container || !label || !arrow) return;
+
+      const isLandscape = window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
+      const isVisible = isLandscape
+        ? container.classList.contains("user-expanded")
+        : !container.classList.contains("user-collapsed");
+
+      label.textContent = isVisible ? "Hide Overview & Charts" : "Show Overview & Charts";
+      arrow.textContent = isVisible ? "▲" : "▼";
+    }
+
+    function toggleOverviewDashboard() {
+      const container = document.getElementById("overviewDashboard");
+      if (!container) return;
+
+      const isLandscape = window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
+      if (isLandscape) {
+        container.classList.toggle("user-expanded");
+      } else {
+        container.classList.toggle("user-collapsed");
+      }
+      updateOverviewToggleUI();
     }
 
     function toggleTheme() {
@@ -3848,6 +3972,9 @@
 
     async function init() {
       syncThemeButton();
+      updateOverviewToggleUI();
+      window.addEventListener("resize", updateOverviewToggleUI);
+      window.addEventListener("orientationchange", updateOverviewToggleUI);
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.view));
       });
