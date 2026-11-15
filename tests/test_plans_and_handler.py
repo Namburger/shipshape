@@ -76,6 +76,9 @@ class PlansAndHandlerTests(unittest.TestCase):
         self.pdf_bytes = SAMPLE_PDF.read_bytes()
         plans._PARSED_PLAN_CACHE = None
 
+        self.env_patch = mock.patch.dict(os.environ, {}, clear=True)
+        self.env_patch.start()
+
         self.patches = [
             mock.patch.object(config, "ENV_FILE", self.tdir / ".env"),
             mock.patch.object(plans, "DATA_DIR", self.tdir),
@@ -93,6 +96,7 @@ class PlansAndHandlerTests(unittest.TestCase):
         plans._PARSED_PLAN_CACHE = None
         for p in reversed(self.patches):
             p.stop()
+        self.env_patch.stop()
         self._tmp.cleanup()
 
     def test_upload_parse_cache_and_remove_lifecycle(self):

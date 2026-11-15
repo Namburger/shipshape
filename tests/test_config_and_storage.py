@@ -21,7 +21,7 @@ class ConfigTests(unittest.TestCase):
                 encoding="utf-8",
             )
             with mock.patch.object(config, "ENV_FILE", env_path), mock.patch.dict(
-                os.environ, {"STRAVA_CLIENT_SECRET": "override-secret"}, clear=False
+                os.environ, {"STRAVA_CLIENT_SECRET": "override-secret"}, clear=True
             ):
                 loaded = config.load_env()
                 self.assertEqual(loaded["STRAVA_CLIENT_ID"], "12345")
