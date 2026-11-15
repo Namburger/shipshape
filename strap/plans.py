@@ -11,6 +11,7 @@ from .config import (
     LEGACY_UPLOADED_PLAN_IMG,
     PLAN_PDF_FILE,
     UPLOADED_PLAN_PDF,
+    get_app_password,
     has_strava_credentials,
     load_env,
 )
@@ -104,8 +105,21 @@ def _resolve_active_plan() -> Optional[dict]:
     return parsed_plan
 
 
-def build_dashboard_state() -> dict:
-    """Assemble the complete frontend bootstrap state for /api/state."""
+def build_dashboard_state(unlocked: bool = True) -> dict:
+    """Assemble the frontend bootstrap state for /api/state, protecting sensitive info when locked."""
+    app_pwd = get_app_password()
+    password_required = bool(app_pwd)
+    if password_required and not unlocked:
+        return {
+            "password_required": True,
+            "unlocked": False,
+            "configured": False,
+            "authenticated": False,
+            "activities": [],
+            "plan_uploaded": False,
+            "plan": None,
+        }
+
     env = load_env()
     tokens = load_tokens()
     cache = load_cache()
@@ -114,6 +128,8 @@ def build_dashboard_state() -> dict:
     plan_uploaded = bool(app_st.get("plan_uploaded"))
 
     return {
+        "password_required": password_required,
+        "unlocked": True,
         "configured": configured,
         "client_id": env.get("STRAVA_CLIENT_ID", "") if configured else "",
         "authenticated": bool(tokens.get("access_token")),

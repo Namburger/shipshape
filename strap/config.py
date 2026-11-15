@@ -18,14 +18,14 @@ INDEX_FILE = BASE_DIR / "index.html"
 PLAN_PDF_FILE = ASSETS_DIR / "jane_doe_training.pdf"
 
 PORT = int(os.environ.get("PORT", "8000"))
-HOST = "127.0.0.1"
+HOST = os.environ.get("HOST", "0.0.0.0" if os.environ.get("RENDER") else "127.0.0.1")
 
 _PLACEHOLDER_IDS = {"", "your_client_id_here"}
 _PLACEHOLDER_SECRETS = {"", "your_client_secret_here"}
 
 
 def load_env() -> dict:
-    """Load Strava credentials from .env with environment variable overrides."""
+    """Load Strava credentials and optional app password from .env with environment variable overrides."""
     env = {}
     if ENV_FILE.exists():
         for raw_line in ENV_FILE.read_text(encoding="utf-8").splitlines():
@@ -34,18 +34,41 @@ def load_env() -> dict:
                 continue
             key, value = line.split("=", 1)
             env[key.strip()] = value.strip().strip('"').strip("'")
-    for key in ("STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET"):
+    for key in ("STRAVA_CLIENT_ID", "STRAVA_CLIENT_SECRET", "APP_PASSWORD", "SHIPSHAPE_PASSWORD"):
         if os.environ.get(key):
             env[key] = os.environ[key]
     return env
 
 
+def get_app_password() -> str:
+    """Return the configured app passcode (empty string if open / no passcode required)."""
+    env = load_env()
+    return env.get("APP_PASSWORD") or env.get("SHIPSHAPE_PASSWORD") or ""
+
+
 def save_env(client_id: str, client_secret: str) -> None:
-    """Persist Strava API credentials to .env."""
-    ENV_FILE.write_text(
-        f"STRAVA_CLIENT_ID={client_id.strip()}\nSTRAVA_CLIENT_SECRET={client_secret.strip()}\n",
-        encoding="utf-8",
-    )
+    """Persist Strava API credentials to .env safely preventing CRLF injection."""
+    clean_id = client_id.strip()
+    clean_secret = client_secret.strip()
+    if any(c in "\r\n" for c in clean_id + clean_secret):
+        raise ValueError("Credentials cannot contain newlines.")
+
+    # Preserve any existing APP_PASSWORD in .env
+    existing_env = load_env()
+    pwd = existing_env.get("APP_PASSWORD") or existing_env.get("SHIPSHAPE_PASSWORD")
+    lines = [
+        f"STRAVA_CLIENT_ID={clean_id}",
+        f"STRAVA_CLIENT_SECRET={clean_secret}",
+    ]
+    if pwd:
+        lines.append(f"APP_PASSWORD={pwd}")
+    content = "\n".join(lines) + "\n"
+
+    ENV_FILE.write_text(content, encoding="utf-8")
+    try:
+        ENV_FILE.chmod(0o600)
+    except OSError:
+        pass
 
 
 def has_strava_credentials(env: dict) -> bool:

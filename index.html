@@ -1340,6 +1340,25 @@
   <input type="file" id="planFileInput" accept="application/pdf,.pdf" style="display: none;" />
 
   <main class="container">
+    <!-- PASSCODE GATE: Shown when the server is secured with APP_PASSWORD and user is locked -->
+    <section id="passcodeGate" class="onboarding-wrap" style="display: none; max-width: 440px; margin: 3rem auto;">
+      <div class="step-card" style="padding: 2.2rem 1.8rem; text-align: center; border-radius: var(--radius); box-shadow: var(--shadow);">
+        <div style="font-size: 2.4rem; margin-bottom: 0.5rem;">🔒</div>
+        <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.4rem;">Passcode Protected</h2>
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.4rem; line-height: 1.45;">
+          This dashboard is secured. Enter your Ship Shape passcode to access training runs and calendars.
+        </p>
+        <form id="passcodeForm" onsubmit="submitPasscode(event)" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <input type="password" id="passcodeInput" placeholder="Enter crew passcode..." required autocomplete="current-password"
+            style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border); font-size: 1rem; background: var(--bg); color: var(--text); box-sizing: border-box;" />
+          <div id="passcodeError" style="display: none; color: var(--red); font-size: 0.85rem; font-weight: 600;"></div>
+          <button type="submit" class="btn btn-theme-active" style="padding: 0.75rem; font-size: 0.95rem; font-weight: 700;">
+            Unlock Dashboard →
+          </button>
+        </form>
+      </div>
+    </section>
+
     <!-- ONBOARDING GATE: Shown until Strava is connected -->
     <section id="onboardingGate" class="onboarding-wrap" style="display: none;">
       <div class="onboarding-hero">
@@ -2318,12 +2337,54 @@
       ].filter(Boolean).join("");
     }
 
+    async function submitPasscode(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById("passcodeInput");
+      const err = document.getElementById("passcodeError");
+      err.style.display = "none";
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: input.value })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          input.value = "";
+          await init();
+        } else {
+          err.textContent = data.error || "Incorrect passcode.";
+          err.style.display = "block";
+        }
+      } catch (ex) {
+        err.textContent = "Error: " + ex.message;
+        err.style.display = "block";
+      }
+    }
+
+    async function lockDashboard() {
+      await fetch("/api/logout", { method: "POST" });
+      await init();
+    }
+
     function renderOnboardingAndHeader() {
       const actions = document.getElementById("headerActions");
+      const passGate = document.getElementById("passcodeGate");
       const gate = document.getElementById("onboardingGate");
       const dash = document.getElementById("dashboardContent");
       const wkBadge = document.getElementById("currentWeekBadge");
       const sub = document.getElementById("athleteSub");
+
+      if (appState.password_required && !appState.unlocked) {
+        if (passGate) passGate.style.display = "block";
+        gate.style.display = "none";
+        dash.style.display = "none";
+        wkBadge.style.display = "none";
+        actions.innerHTML = "";
+        sub.textContent = "Locked • Enter passcode to view dashboard";
+        return false;
+      }
+      if (passGate) passGate.style.display = "none";
 
       const ready = Boolean(appState.authenticated);
       const hasPlan = Boolean(appState.plan_uploaded && appState.plan);
@@ -2471,6 +2532,10 @@
           <button class="btn" id="btnUploadPlan">📄 Upload Plan PDF</button>
         `;
 
+      const lockButtonHtml = appState.password_required
+        ? `<button class="btn" id="btnLockDashboard" title="Lock the dashboard">🔒 Lock</button>`
+        : "";
+
       actions.innerHTML = `
         ${planButtonsHtml}
         <span class="athlete-pill">
@@ -2480,6 +2545,7 @@
         </span>
         <button class="btn btn-strava" id="btnSyncNow">🔄 Sync Strava</button>
         <button class="btn" id="btnDisconnectStrava" title="Disconnect your Strava account">Disconnect</button>
+        ${lockButtonHtml}
       `;
 
       if (hasPlan) {
@@ -2495,6 +2561,9 @@
       }
       document.getElementById("btnSyncNow").addEventListener("click", triggerSync);
       document.getElementById("btnDisconnectStrava").addEventListener("click", disconnectStrava);
+      if (document.getElementById("btnLockDashboard")) {
+        document.getElementById("btnLockDashboard").addEventListener("click", lockDashboard);
+      }
       return true;
     }
 

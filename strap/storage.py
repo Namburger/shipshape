@@ -22,6 +22,10 @@ def _load_json(path: Path, default: Any) -> Any:
 def _save_json(path: Path, payload: Any) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
 
 
 def load_app_state() -> dict:

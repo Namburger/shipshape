@@ -199,6 +199,72 @@ class PlansAndHandlerTests(unittest.TestCase):
         code, _, _ = _dispatch_http("GET", "/nonexistent")
         self.assertEqual(code, 404)
 
+    def test_security_headers_and_passcode_gate(self):
+        # 1. Responses include standard security headers
+        code, hdrs, _ = _dispatch_http("GET", "/")
+        self.assertEqual(code, 200)
+        self.assertEqual(hdrs.get("x-content-type-options"), "nosniff")
+        self.assertEqual(hdrs.get("x-frame-options"), "DENY")
+        self.assertEqual(hdrs.get("referrer-policy"), "strict-origin-when-cross-origin")
+
+        # 2. Activity ID sanitization rejects traversal attacks
+        code, _, body = _dispatch_http("GET", "/api/activity/..%2F..%2Fathlete")
+        self.assertEqual(code, 400)
+        self.assertFalse(json.loads(body)["ok"])
+
+        code, _, body = _dispatch_http("GET", "/api/activity/bad_id_abc")
+        self.assertEqual(code, 400)
+
+        # 3. Passcode gating when APP_PASSWORD is configured
+        with mock.patch.dict(os.environ, {"APP_PASSWORD": "crewsecret123"}, clear=False):
+            # Unauthenticated state does not leak private info
+            code, _, body = _dispatch_http("GET", "/api/state")
+            self.assertEqual(code, 200)
+            st = json.loads(body)
+            self.assertTrue(st["password_required"])
+            self.assertFalse(st["unlocked"])
+            self.assertEqual(st["activities"], [])
+            self.assertIsNone(st["plan"])
+
+            # Mutating and protected endpoints require authorization
+            code, _, _ = _dispatch_http("POST", "/api/sync", {})
+            self.assertEqual(code, 401)
+            code, _, _ = _dispatch_http("GET", "/api/plan-pdf")
+            self.assertEqual(code, 401)
+
+            # Incorrect passcode fails
+            code, _, login_err = _dispatch_http("POST", "/api/login", {"password": "wrong"})
+            self.assertEqual(code, 401)
+            self.assertFalse(json.loads(login_err)["ok"])
+
+            # Correct passcode logs in and issues session cookie
+            code, login_hdrs, login_ok = _dispatch_http("POST", "/api/login", {"password": "crewsecret123"})
+            self.assertEqual(code, 200)
+            self.assertTrue(json.loads(login_ok)["ok"])
+            cookie_hdr = login_hdrs.get("set-cookie")
+            self.assertIn("shipshape_session=", cookie_hdr)
+            self.assertIn("HttpOnly", cookie_hdr)
+
+            # Authenticated request with session cookie succeeds
+            cookie_val = cookie_hdr.split(";")[0]
+            code, _, unlocked_body = _dispatch_http("GET", "/api/state", headers={"Cookie": cookie_val})
+            self.assertEqual(code, 200)
+            unlocked_st = json.loads(unlocked_body)
+            self.assertTrue(unlocked_st["password_required"])
+            self.assertTrue(unlocked_st["unlocked"])
+
+            # Header-based auth (X-Shipshape-Password) also works
+            code, _, hdr_body = _dispatch_http(
+                "GET", "/api/state", headers={"X-Shipshape-Password": "crewsecret123"}
+            )
+            self.assertEqual(code, 200)
+            self.assertTrue(json.loads(hdr_body)["unlocked"])
+
+            # Logout clears session cookie
+            code, logout_hdrs, _ = _dispatch_http("POST", "/api/logout", {})
+            self.assertEqual(code, 200)
+            self.assertIn("Max-Age=0", logout_hdrs.get("set-cookie", ""))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -43,17 +43,18 @@ def strava_get(url: str, access_token: str) -> object:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def build_authorize_url(client_id: str, redirect_uri: str) -> str:
-    """Construct the Strava OAuth2 authorization redirect URL."""
-    params = urllib.parse.urlencode(
-        {
-            "client_id": client_id,
-            "response_type": "code",
-            "redirect_uri": redirect_uri,
-            "approval_prompt": "force",
-            "scope": "read,activity:read_all",
-        }
-    )
+def build_authorize_url(client_id: str, redirect_uri: str, state: str = None) -> str:
+    """Construct the Strava OAuth2 authorization redirect URL with optional anti-CSRF state."""
+    params_dict = {
+        "client_id": client_id,
+        "response_type": "code",
+        "redirect_uri": redirect_uri,
+        "approval_prompt": "force",
+        "scope": "read,activity:read_all",
+    }
+    if state:
+        params_dict["state"] = state
+    params = urllib.parse.urlencode(params_dict)
     return f"{STRAVA_AUTH_URL}?{params}"
 
 

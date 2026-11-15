@@ -29,9 +29,12 @@ Create a `.env` file in the repository root:
 ```env
 STRAVA_CLIENT_ID=your_client_id_here
 STRAVA_CLIENT_SECRET=your_client_secret_here
+
+# Optional: Set a shared passcode to lock down public/remote deployments
+APP_PASSWORD=your_secure_friends_passcode
 ```
 
-> **Note**: `.env` is listed in `.gitignore` and should never be committed. You can also supply `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` directly as shell environment variables (which override `.env`).
+> **Note**: `.env` is listed in `.gitignore` and should never be committed. You can also supply `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `APP_PASSWORD` directly as shell environment variables (which override `.env`). If `APP_PASSWORD` is set, visitors must enter the passcode to access run history, splits, and training plans.
 
 ### 3. Start the Server
 
