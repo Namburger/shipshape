@@ -1303,38 +1303,6 @@
       }
     }
 
-    .overview-dashboard.user-collapsed {
-      display: none !important;
-    }
-
-    .overview-toggle-bar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      margin: 0.5rem 0 0.25rem;
-    }
-
-    .btn-overview-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 0.32rem 0.75rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      cursor: pointer;
-      color: var(--text-muted);
-      transition: all 0.15s ease;
-    }
-
-    .btn-overview-toggle:hover {
-      background: var(--bg-card-hover);
-      color: var(--text);
-      border-color: var(--brand);
-    }
-
     /* Short viewports / Mobile landscape mode optimizations */
     @media (max-height: 600px) {
       header {
@@ -1364,10 +1332,6 @@
     }
 
     @media (orientation: landscape) and (max-height: 600px) {
-      .overview-dashboard:not(.user-expanded) {
-        display: none !important;
-      }
-
       /* Make desktop calendar table visible on phones in landscape */
       #calendarDesktopWrap,
       #matrixDesktopWrap {
@@ -1497,18 +1461,7 @@
 
     <!-- DASHBOARD CONTENT: Shown once Strava is connected (with or without a Training Plan PDF) -->
     <div id="dashboardContent" style="display: none;">
-      <!-- Overview Dashboard Collapse / Expand Toggle Bar -->
-      <div class="overview-toggle-bar">
-        <button class="btn btn-overview-toggle" id="btnToggleOverview" type="button" onclick="toggleOverviewDashboard()" title="Toggle Overview KPIs & Charts">
-          <span>📊</span>
-          <span id="overviewToggleLabel">Overview & Charts</span>
-          <span id="overviewToggleArrow">▲</span>
-        </button>
-      </div>
-
-      <!-- Collapsible Overview Dashboard: Equivalents, KPIs & Charts -->
-      <div id="overviewDashboard" class="overview-dashboard">
-        <!-- Optional Plan Upsell Banner (shown when authenticated without a plan PDF) -->
+      <!-- Optional Plan Upsell Banner (shown when authenticated without a plan PDF) -->
         <div class="plan-optional-banner" id="planOptionalBanner" style="display: none;">
           <div class="plan-optional-copy">
             <strong>📄 Showing your Strava runs without a training plan</strong>
@@ -1596,7 +1549,6 @@
           <div id="paceChartContainer" style="min-width: 960px; height: 340px;"></div>
         </div>
         <div class="mobile-scroll-hint" id="paceScrollHint">← Swipe horizontally to view pace progression →</div>
-      </div>
 
       <!-- Schedule View Switcher -->
       <div class="controls-bar">
@@ -3918,7 +3870,6 @@
       renderMatrixView(ctx);
       renderWeekDeepDive(ctx);
       renderActivitiesList(ctx);
-      updateOverviewToggleUI();
     }
 
     function syncThemeButton() {
@@ -3927,34 +3878,6 @@
       const isDark = document.documentElement.dataset.theme === "dark";
       btn.classList.toggle("btn-theme-active", isDark);
       btn.setAttribute("aria-pressed", isDark ? "true" : "false");
-    }
-
-    function updateOverviewToggleUI() {
-      const container = document.getElementById("overviewDashboard");
-      const label = document.getElementById("overviewToggleLabel");
-      const arrow = document.getElementById("overviewToggleArrow");
-      if (!container || !label || !arrow) return;
-
-      const isLandscape = window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
-      const isVisible = isLandscape
-        ? container.classList.contains("user-expanded")
-        : !container.classList.contains("user-collapsed");
-
-      label.textContent = isVisible ? "Hide Overview & Charts" : "Show Overview & Charts";
-      arrow.textContent = isVisible ? "▲" : "▼";
-    }
-
-    function toggleOverviewDashboard() {
-      const container = document.getElementById("overviewDashboard");
-      if (!container) return;
-
-      const isLandscape = window.matchMedia("(orientation: landscape) and (max-height: 600px)").matches;
-      if (isLandscape) {
-        container.classList.toggle("user-expanded");
-      } else {
-        container.classList.toggle("user-collapsed");
-      }
-      updateOverviewToggleUI();
     }
 
     function toggleTheme() {
@@ -3972,9 +3895,6 @@
 
     async function init() {
       syncThemeButton();
-      updateOverviewToggleUI();
-      window.addEventListener("resize", updateOverviewToggleUI);
-      window.addEventListener("orientationchange", updateOverviewToggleUI);
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", () => switchTab(btn.dataset.view));
       });
