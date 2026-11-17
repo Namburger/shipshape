@@ -1201,6 +1201,48 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
+    .canvas-preview-checkerboard {
+      background-color: #141924;
+      background-image:
+        linear-gradient(45deg, #1f2636 25%, transparent 25%),
+        linear-gradient(-45deg, #1f2636 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #1f2636 75%),
+        linear-gradient(-45deg, transparent 75%, #1f2636 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+
+    .btn-style-group {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 0.2rem;
+      gap: 0.2rem;
+    }
+
+    .btn-style-tab {
+      padding: 0.35rem 0.75rem;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-style-tab:hover {
+      color: var(--text);
+    }
+
+    .btn-style-tab.active {
+      background: var(--bg-card);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
     .cal-day-num {
       font-weight: 700;
       font-size: 0.78rem;
@@ -1794,13 +1836,21 @@
     </div>
     <div class="dialog-body" id="dayCardDialogBody" style="padding: 1.25rem;">
       <div id="dayCardDialogMetrics"></div>
-      <div style="text-align:center; margin-top:1.25rem;">
-        <canvas id="dayShareCanvas" width="1080" height="1080" style="display:none;"></canvas>
-        <img id="dayShareImagePreview" alt="Goal vs Actual Run Card"
-             style="width:100%; max-width:440px; aspect-ratio:1/1; border-radius:16px; border:1px solid var(--border); box-shadow:0 12px 36px rgba(0,0,0,0.28); display:block; margin:0 auto; cursor:pointer;"
-             title="Click or tap to save to Photos / share" onclick="saveDayCardToPhotos()" />
-        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
-          💡 <em>Tip: Tap & hold the preview image on iPhone/iPad to save directly to Apple Photos.</em>
+      <div style="display:flex; justify-content:center; margin: 1rem 0 0.85rem 0;">
+        <div class="btn-style-group" role="group" aria-label="Sticker Style">
+          <button type="button" class="btn-style-tab active" data-style="story" onclick="changeDayShareStyle('story')">📱 Story Overlay (Transparent)</button>
+          <button type="button" class="btn-style-tab" data-style="solid" onclick="changeDayShareStyle('solid')">🃏 Full Card (Solid)</button>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div id="daySharePreviewWrap" class="canvas-preview-checkerboard" style="padding:0.75rem; border-radius:18px; border:1px solid var(--border); display:inline-block; max-width:280px; width:100%; box-shadow:0 12px 36px rgba(0,0,0,0.28); margin:0 auto; transition:max-width 0.2s ease;">
+          <canvas id="dayShareCanvas" width="750" height="1334" style="display:none;"></canvas>
+          <img id="dayShareImagePreview" alt="Goal vs Actual Story Sticker"
+               style="width:100%; aspect-ratio:750/1334; border-radius:12px; display:block; margin:0 auto; cursor:pointer;"
+               title="Tap or right-click to save to Photos / copy" onclick="saveDayCardToPhotos()" />
+        </div>
+        <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.55rem;" id="dayShareHint">
+          ✨ <em>Transparent PNG (750×1334) — no logo, matches Strava story style, ready to overlay on your Instagram Story photo!</em>
         </div>
       </div>
       <div class="day-share-actions">
@@ -4240,7 +4290,120 @@
       return y + lineHeight;
     }
 
-    function drawDayShareCard(canvas, d) {
+    function drawStoryOverlay(canvas, d) {
+      canvas.width = 750;
+      canvas.height = 1334;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, 750, 1334);
+
+      // Text shadow for high contrast over any Instagram story photo
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      ctx.textAlign = "center";
+
+      const items = [];
+
+      // 1. Distance
+      let distSub = "";
+      if (d.targetMi > 0) {
+        const sign = d.distDiff >= 0 ? "+" : "";
+        distSub = `Goal: ${d.targetMi.toFixed(1)} mi (${sign}${d.distDiff.toFixed(2)} mi)`;
+      }
+      items.push({
+        label: "Distance",
+        value: `${d.actualMiles > 0 ? d.actualMiles.toFixed(2) : "0.00"} mi`,
+        sub: distSub,
+        subColor: d.distDiff >= 0 ? "#34d399" : (d.distPct < 70 ? "#f87171" : "#fbbf24")
+      });
+
+      // 2. Pace
+      let paceSub = "";
+      if (d.targetPaceStr) {
+        const deltaPart = d.paceDeltaStr ? ` (${d.paceDeltaStr})` : "";
+        paceSub = `Goal: ${d.targetPaceStr}/mi${deltaPart}`;
+      }
+      items.push({
+        label: "Pace",
+        value: d.actualPaceStr !== "--:--" ? `${d.actualPaceStr} /mi` : "--:--",
+        sub: paceSub,
+        subColor: (d.paceDiffSec !== null && d.paceDiffSec <= 0) ? "#34d399" : "#fbbf24"
+      });
+
+      // 3. Time
+      let timeSub = "";
+      if (d.targetTimeStr && d.targetMi > 0) {
+        timeSub = `Goal Est: ${d.targetTimeStr}`;
+      }
+      items.push({
+        label: "Time",
+        value: d.actualMovingSec > 0 ? formatDuration(d.actualMovingSec) : "--",
+        sub: timeSub,
+        subColor: "#e2e8f0"
+      });
+
+      // 4. Elev Gain (if available)
+      if (d.totalElevation) {
+        items.push({
+          label: "Elev Gain",
+          value: `${Math.round(d.totalElevation * 3.28084)} ft`,
+          sub: ""
+        });
+      }
+
+      // 5. Avg HR (if available)
+      if (d.avgHeartRate) {
+        items.push({
+          label: "Avg HR",
+          value: `${d.avgHeartRate} bpm`,
+          sub: ""
+        });
+      }
+
+      // 6. Workout (if scheduled)
+      if (d.planned && d.planned.type) {
+        items.push({
+          label: "Workout",
+          value: d.planned.type,
+          sub: (d.planned.description && d.planned.description !== d.planned.type) ? d.planned.description : "",
+          subColor: "#94a3b8"
+        });
+      }
+
+      // Calculate total height to center vertically on 1334px
+      const itemHeights = items.map(it => it.sub ? 98 : 74);
+      const gap = 34;
+      const totalContentHeight = itemHeights.reduce((s, h) => s + h, 0) + (items.length - 1) * gap;
+      let curY = Math.max(90, Math.round((1334 - totalContentHeight) / 2));
+
+      items.forEach((it, idx) => {
+        // Label (Distance, Pace, Time, Elev Gain, Avg HR, Workout)
+        ctx.font = "500 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(it.label, 375, curY + 22);
+
+        // Value (10.01 mi, 10:16 /mi, etc.)
+        ctx.font = "bold 48px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(it.value, 375, curY + 68);
+
+        // Sub label (Goal comparison)
+        if (it.sub) {
+          ctx.font = "600 20px -apple-system, BlinkMacSystemFont, sans-serif";
+          ctx.fillStyle = it.subColor || "#e2e8f0";
+          let subText = it.sub;
+          if (ctx.measureText(subText).width > 680) {
+            subText = subText.slice(0, 48) + "...";
+          }
+          ctx.fillText(subText, 375, curY + 98);
+        }
+
+        curY += itemHeights[idx] + gap;
+      });
+    }
+
+    function drawSolidCard(canvas, d) {
       canvas.width = 1080;
       canvas.height = 1080;
       const ctx = canvas.getContext("2d");
@@ -4525,6 +4688,14 @@
       ctx.textAlign = "left";
     }
 
+    function drawDayShareCard(canvas, d, style = "story") {
+      if (style === "solid") {
+        drawSolidCard(canvas, d);
+      } else {
+        drawStoryOverlay(canvas, d);
+      }
+    }
+
     function renderDayShareDialogContent(d) {
       const title = document.getElementById("dayCardDialogTitle");
       const sub = document.getElementById("dayCardDialogSub");
@@ -4605,12 +4776,53 @@
         ${runsHtml}
       `;
 
-      // Render high-res Canvas and export to preview Image
-      drawDayShareCard(canvas, d);
+      // Render default Story overlay canvas (matching example.png) and export to preview Image
+      const style = appState.dayShareStyle || "story";
+      const wrap = document.getElementById("daySharePreviewWrap");
+      if (wrap) wrap.style.maxWidth = style === "story" ? "280px" : "440px";
+      if (img) img.style.aspectRatio = style === "story" ? "750 / 1334" : "1 / 1";
+      document.querySelectorAll(".btn-style-tab").forEach(b => {
+        b.classList.toggle("active", b.dataset.style === style);
+      });
+      drawDayShareCard(canvas, d, style);
       try {
         img.src = canvas.toDataURL("image/png");
       } catch (_) { }
     }
+
+    window.changeDayShareStyle = function (style) {
+      appState.dayShareStyle = style;
+      document.querySelectorAll(".btn-style-tab").forEach(b => {
+        b.classList.toggle("active", b.dataset.style === style);
+      });
+      const hintEl = document.getElementById("dayShareHint");
+      const img = document.getElementById("dayShareImagePreview");
+      const wrap = document.getElementById("daySharePreviewWrap");
+
+      if (style === "story") {
+        if (wrap) wrap.style.maxWidth = "280px";
+        if (img) img.style.aspectRatio = "750 / 1334";
+        if (hintEl) {
+          hintEl.innerHTML = "✨ <em>Transparent PNG (750×1334) — no logo, matches Strava story style, ready to overlay on your Instagram Story photo!</em>";
+        }
+      } else {
+        if (wrap) wrap.style.maxWidth = "440px";
+        if (img) img.style.aspectRatio = "1 / 1";
+        if (hintEl) {
+          hintEl.innerHTML = "🃏 <em>Standalone 1080×1080 square card with dark background and ShipShape branding.</em>";
+        }
+      }
+
+      const canvas = document.getElementById("dayShareCanvas");
+      if (!canvas || !canvas.dataset.dateYmd) return;
+      const data = getDayDetailData(canvas.dataset.dateYmd);
+      drawDayShareCard(canvas, data, style);
+      if (img) {
+        try {
+          img.src = canvas.toDataURL("image/png");
+        } catch (_) {}
+      }
+    };
 
     window.openDayShareModal = function (dateYMD, event) {
       if (event && event.target && event.target.closest("a, details, summary, select, input")) {
@@ -4633,7 +4845,8 @@
       const canvas = document.getElementById("dayShareCanvas");
       if (!canvas) return;
       const dateYmd = canvas.dataset.dateYmd || "workout";
-      const filename = `shipshape-${dateYmd}.png`;
+      const isStory = (appState.dayShareStyle || "story") === "story";
+      const filename = isStory ? `shipshape-story-${dateYmd}.png` : `shipshape-card-${dateYmd}.png`;
 
       canvas.toBlob(async (blob) => {
         if (!blob) return;
@@ -4646,7 +4859,7 @@
               title: `ShipShape Workout - ${dateYmd}`,
               text: `ShipShape Goal vs Actual: ${dateYmd}`
             });
-            showDayShareToast("Share sheet opened! Tap 'Save Image' to store in Apple Photos.");
+            showDayShareToast("Share sheet opened! Tap 'Save Image' to store transparent sticker in Apple Photos.");
             return;
           } catch (err) {
             if (err.name === "AbortError") return;
@@ -4662,7 +4875,7 @@
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showDayShareToast(`Saved ${filename} to Downloads! On iPhone/iPad, long-press preview to save to Photos.`);
+        showDayShareToast(`Saved ${filename} to Downloads! Ready to overlay on your Instagram Story.`);
       }, "image/png");
     };
 
@@ -4670,7 +4883,8 @@
       const canvas = document.getElementById("dayShareCanvas");
       if (!canvas) return;
       const dateYmd = canvas.dataset.dateYmd || "workout";
-      const filename = `shipshape-${dateYmd}.png`;
+      const isStory = (appState.dayShareStyle || "story") === "story";
+      const filename = isStory ? `shipshape-story-${dateYmd}.png` : `shipshape-card-${dateYmd}.png`;
 
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -4682,7 +4896,7 @@
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
-        showDayShareToast(`Downloaded ${filename} to your Downloads folder!`);
+        showDayShareToast(`Downloaded ${filename} (transparent PNG)!`);
       }, "image/png");
     };
 
