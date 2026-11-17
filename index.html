@@ -3503,13 +3503,11 @@
       });
       tbody.innerHTML = rowsHtml;
 
-      // Mobile week-by-week cards for the selected month
+      // Mobile week-by-week cards for the selected month: expand only the current week by default
       if (appState.expandedCalendarWeeks === null) {
-        const defaultOpen = cal.monthWeeks
-          .filter(w => w.isCurrentWeek || w.weekActivityCount > 0)
-          .map(w => w.startYMD);
+        const curWeek = cal.monthWeeks.find(w => w.isCurrentWeek);
         appState.expandedCalendarWeeks = new Set(
-          defaultOpen.length > 0 ? defaultOpen : (cal.monthWeeks[0] ? [cal.monthWeeks[0].startYMD] : [])
+          curWeek ? [curWeek.startYMD] : (cal.monthWeeks[0] ? [cal.monthWeeks[0].startYMD] : [])
         );
       }
 
