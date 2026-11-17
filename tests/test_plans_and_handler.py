@@ -334,6 +334,22 @@ class PlansAndHandlerTests(unittest.TestCase):
         _, _, body_a4 = _dispatch_http("GET", "/api/state", headers=hdr_a)
         self.assertFalse(json.loads(body_a4)["authenticated"])
 
+    def test_day_card_modal_elements_and_functions(self):
+        """Verify index.html serves the Goal vs Actual share modal and canvas functions."""
+        code, headers, body = _dispatch_http("GET", "/")
+        self.assertEqual(code, 200)
+        self.assertIn("text/html", headers.get("content-type", ""))
+        html = body.decode("utf-8")
+
+        self.assertIn('id="dayCardDialog"', html)
+        self.assertIn('id="dayShareCanvas"', html)
+        self.assertIn('id="dayShareImagePreview"', html)
+        self.assertIn("openDayShareModal", html)
+        self.assertIn("saveDayCardToPhotos", html)
+        self.assertIn("downloadDayCardImage", html)
+        self.assertIn("copyDayCardImage", html)
+        self.assertIn("copyDayCardText", html)
+
 
 if __name__ == "__main__":
     unittest.main()

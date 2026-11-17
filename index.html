@@ -1000,6 +1000,13 @@
       border: 1px solid var(--day-run-border);
       border-radius: 9px;
       padding: 0.65rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .mobile-day-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--brand);
     }
 
     .plan-optional-banner {
@@ -1086,6 +1093,15 @@
       background: var(--bg-card);
     }
 
+    table.cal-grid td:not(:last-child) {
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    table.cal-grid td:not(:last-child):hover {
+      background: var(--bg-card-hover);
+    }
+
     table.cal-grid td:last-child {
       border-right: none;
       background: var(--surface-subtle);
@@ -1107,6 +1123,82 @@
       justify-content: space-between;
       gap: 0.25rem;
       margin-bottom: 0.35rem;
+    }
+
+    .cal-share-btn {
+      opacity: 0.55;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      border: none;
+      background: transparent;
+      padding: 0 0.15rem;
+      line-height: 1;
+    }
+
+    .cal-share-btn:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .day-compare-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .day-compare-card {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .day-compare-card strong {
+      font-size: 1.15rem;
+      color: var(--heading);
+    }
+
+    .day-compare-card .stat-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .day-compare-card .stat-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .day-share-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 1.25rem;
+    }
+
+    .day-share-toast {
+      background: var(--brand);
+      color: #ffffff;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0.85rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .cal-day-num {
@@ -1688,6 +1780,44 @@
     </div>
     <div class="dialog-body" id="detailDialogBody">
       Loading splits...
+    </div>
+  </dialog>
+
+  <!-- Dialog: Goal vs Actual Share Card -->
+  <dialog id="dayCardDialog" style="width: min(760px, 95vw);">
+    <div class="dialog-header">
+      <div>
+        <strong id="dayCardDialogTitle" style="font-size:1.08rem;">Goal vs Actual Card</strong>
+        <div id="dayCardDialogSub" style="font-size:0.78rem; color:var(--text-muted); margin-top:0.15rem;">Shareable run comparison</div>
+      </div>
+      <button class="btn" id="btnCloseDayCardDialog" type="button">✕ Close</button>
+    </div>
+    <div class="dialog-body" id="dayCardDialogBody" style="padding: 1.25rem;">
+      <div id="dayCardDialogMetrics"></div>
+      <div style="text-align:center; margin-top:1.25rem;">
+        <canvas id="dayShareCanvas" width="1080" height="1080" style="display:none;"></canvas>
+        <img id="dayShareImagePreview" alt="Goal vs Actual Run Card"
+             style="width:100%; max-width:440px; aspect-ratio:1/1; border-radius:16px; border:1px solid var(--border); box-shadow:0 12px 36px rgba(0,0,0,0.28); display:block; margin:0 auto; cursor:pointer;"
+             title="Click or tap to save to Photos / share" onclick="saveDayCardToPhotos()" />
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">
+          💡 <em>Tip: Tap & hold the preview image on iPhone/iPad to save directly to Apple Photos.</em>
+        </div>
+      </div>
+      <div class="day-share-actions">
+        <button class="btn btn-strava" type="button" onclick="saveDayCardToPhotos()">
+          📱 Save to Photos / Share
+        </button>
+        <button class="btn" type="button" onclick="downloadDayCardImage()">
+          ⬇️ Download PNG
+        </button>
+        <button class="btn" type="button" onclick="copyDayCardImage()">
+          📋 Copy Image
+        </button>
+        <button class="btn" type="button" onclick="copyDayCardText()">
+          📝 Copy Text Summary
+        </button>
+      </div>
+      <div id="dayShareToast" class="day-share-toast" style="display:none;"></div>
     </div>
   </dialog>
 
@@ -3330,13 +3460,16 @@
           }
 
           return `
-            <td class="${tdClasses}">
+            <td class="${tdClasses}" onclick="openDayShareModal('${d.dateYMD}', event)">
               <div class="cal-day-head">
                 <span class="cal-day-num">
                   ${dayNum}
                   ${d.isToday ? '<span class="badge badge-strava" style="font-size:0.56rem;padding:0.06rem 0.3rem;">TODAY</span>' : ""}
                 </span>
-                ${d.actualMiles > 0 ? `<span class="badge badge-blue" style="font-size:0.6rem;">${d.actualMiles.toFixed(1)} mi</span>` : ""}
+                <span style="display:inline-flex; align-items:center; gap:0.25rem;">
+                  ${d.actualMiles > 0 ? `<span class="badge badge-blue" style="font-size:0.6rem;">${d.actualMiles.toFixed(1)} mi</span>` : ""}
+                  <button class="cal-share-btn" type="button" title="View Goal vs Actual Card" onclick="openDayShareModal('${d.dateYMD}', event)">📸</button>
+                </span>
               </div>
               ${planChipHtml}
               ${runsHtml}
@@ -3394,12 +3527,13 @@
               ? `<div class="cal-runs-stack">${buildRunItemsHtml(dayActs)}</div>`
               : `<div style="font-size:0.75rem;color:var(--text-muted);">No Strava activity logged</div>`;
             return `
-                <div class="mobile-day-card">
+                <div class="mobile-day-card" onclick="openDayShareModal('${d.dateYMD}', event)">
                   <div class="cell-date">
                     <span><strong>${d.dayName.slice(0, 3)}</strong> • ${formatShortDate(d.dateYMD)}</span>
-                    <span>
+                    <span style="display:inline-flex; align-items:center; gap:0.35rem;">
                       ${d.isToday ? '<span class="badge badge-strava">TODAY</span>' : ""}
                       ${d.actualMiles > 0 ? `<span class="badge badge-blue">${d.actualMiles.toFixed(2)} mi @ ${paceStr}/mi</span>` : ""}
+                      <button class="btn" style="padding:0.12rem 0.45rem; font-size:0.68rem;" onclick="openDayShareModal('${d.dateYMD}', event)">📸 Card</button>
                     </span>
                   </div>
                   ${planNote}
@@ -3446,7 +3580,7 @@
 
     function renderMatrixCell(dayInfo) {
       if (!dayInfo || !dayInfo.planned) return `<td>-</td>`;
-      return `<td>${buildDayContentHtml(dayInfo, false)}</td>`;
+      return `<td style="cursor:pointer;" onclick="openDayShareModal('${dayInfo.dateYMD}', event)">${buildDayContentHtml(dayInfo, false)}</td>`;
     }
 
     function renderMobileWeekCards(model) {
@@ -3677,7 +3811,8 @@
                     ${r.total_elevation_gain ? ` • ⛰️ ${Math.round(r.total_elevation_gain * 3.28084)} ft` : ""}
                     ${r.average_heartrate ? ` • ❤️ ${Math.round(r.average_heartrate)} bpm` : ""}
                   </div>
-                  <div style="margin-top:0.45rem; display:flex; gap:0.5rem;">
+                  <div style="margin-top:0.45rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button class="btn" style="padding:0.25rem 0.55rem; font-size:0.74rem;" onclick="openDayShareModal('${d.dateYMD}', event)">📸 Goal vs Actual Card</button>
                     ${isRun ? `<button class="btn" style="padding:0.25rem 0.55rem; font-size:0.74rem;" onclick="openActivitySplits('${escapeHtml(r.id)}', '${jsName}')">📊 View Mile / Lap Splits</button>` : ""}
                     <a class="btn" style="padding:0.25rem 0.55rem; font-size:0.74rem;" href="https://www.strava.com/activities/${escapeHtml(r.id)}" target="_blank" rel="noopener">
                       Open in Strava ↗
@@ -3687,7 +3822,10 @@
               `;
           }).join("")
           : `<div class="actual-box ${p ? (d.isPast ? 'missed' : 'upcoming') : 'upcoming'}">
-               ${p ? (d.isPast ? "No Strava run logged on this date" : "Upcoming scheduled workout") : "No Strava activity logged"}
+               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+                 <span>${p ? (d.isPast ? "No Strava run logged on this date" : "Upcoming scheduled workout") : "No Strava activity logged"}</span>
+                 <button class="btn" style="padding:0.2rem 0.45rem; font-size:0.7rem;" onclick="openDayShareModal('${d.dateYMD}', event)">📸 View Card</button>
+               </div>
              </div>`;
 
         return `
@@ -3695,7 +3833,10 @@
             <div>
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                 <strong>${dayName} • ${formatShortDate(d.dateYMD)}</strong>
-                <span class="badge ${p ? 'badge-blue' : 'badge-amber'}">${p ? escapeHtml(p.type) : (dayActivitiesSorted.length > 0 ? 'Logged' : 'Rest')}</span>
+                <div style="display:flex; align-items:center; gap:0.35rem;">
+                  <span class="badge ${p ? 'badge-blue' : 'badge-amber'}">${p ? escapeHtml(p.type) : (dayActivitiesSorted.length > 0 ? 'Logged' : 'Rest')}</span>
+                  <button class="cal-share-btn" type="button" title="View Goal vs Actual Card" onclick="openDayShareModal('${d.dateYMD}', event)">📸</button>
+                </div>
               </div>
               <div style="font-size:0.9rem; font-weight:600; color:var(--text);">${escapeHtml(plannedDesc)}</div>
               <div style="font-size:0.76rem; color:var(--text-muted); margin-top:0.15rem;">${targetMiText}${p && p.target_pace ? ` • Target Pace: ${escapeHtml(p.target_pace)}` : ''}</div>
@@ -3820,6 +3961,781 @@
       }
     };
 
+    function parsePaceStrToSec(paceStr) {
+      if (!paceStr) return null;
+      const m = String(paceStr).match(/(\d+):(\d{2})(?::(\d{2}))?/);
+      if (!m) return null;
+      if (m[3]) {
+        return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]);
+      }
+      return Number(m[1]) * 60 + Number(m[2]);
+    }
+
+    function getDayDetailData(dateYMD) {
+      const dt = parseYMD(dateYMD);
+      const dayName = dt.toLocaleDateString("en-US", { weekday: "long" });
+      const formattedDate = dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      const fullDateFormatted = dt.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
+
+      const runs = (appState.activities || [])
+        .filter(a => (a.start_date_local || a.start_date || "").slice(0, 10) === dateYMD)
+        .sort((a, b) => (a.start_date_local || "").localeCompare(b.start_date_local || ""));
+      const runActivities = runs.filter(isRunActivity);
+
+      const actualMiles = runActivities.reduce((s, r) => s + metersToMiles(r.distance), 0);
+      const actualMovingSec = runActivities.reduce((s, r) => s + (r.moving_time || 0), 0);
+      const actualElapsedSec = runActivities.reduce((s, r) => s + (r.elapsed_time || 0), 0);
+      const actualPaceSec = actualMiles > 0 ? actualMovingSec / actualMiles : null;
+      const actualPaceStr = formatPaceFromSecPerMile(actualPaceSec);
+
+      const totalElevation = runActivities.reduce((s, r) => s + (r.total_elevation_gain || 0), 0);
+      const hrRuns = runActivities.filter(r => r.average_heartrate);
+      const avgHeartRate = hrRuns.length > 0
+        ? Math.round(hrRuns.reduce((s, r) => s + r.average_heartrate, 0) / hrRuns.length)
+        : null;
+
+      // Find plan info
+      let planned = null;
+      let weekNumber = null;
+      if (appState.plan && appState.plan.weeks) {
+        for (const w of appState.plan.weeks) {
+          const wStart = w.week_of;
+          for (let i = 0; i < 7; i++) {
+            if (addDays(wStart, i) === dateYMD) {
+              const dName = DAY_NAMES[i];
+              if (w.days && w.days[dName]) {
+                planned = w.days[dName];
+                weekNumber = w.week_number;
+              }
+              break;
+            }
+          }
+          if (planned) break;
+        }
+      }
+
+      let targetMi = 0;
+      if (planned) {
+        if (planned.total_mi != null) {
+          targetMi = appState.includeWarmup ? planned.total_mi : planned.workout_mi;
+        } else {
+          targetMi = planned.distance_mi || 0;
+        }
+      }
+
+      let targetPaceStr = planned ? (planned.target_pace || null) : null;
+      if (!targetPaceStr && planned && planned.description) {
+        const pm = planned.description.match(/@\s*(\d+:\d{2}(?::\d{2})?)/);
+        if (pm) targetPaceStr = pm[1];
+      }
+      const targetPaceSec = parsePaceStrToSec(targetPaceStr);
+      const targetTimeSec = (targetMi > 0 && targetPaceSec) ? Math.round(targetMi * targetPaceSec) : null;
+      const targetTimeStr = targetTimeSec ? formatDuration(targetTimeSec) : null;
+
+      const distDiff = actualMiles - targetMi;
+      const distPct = targetMi > 0 ? Math.round((actualMiles / targetMi) * 100) : null;
+
+      let paceDiffSec = null;
+      let paceDeltaStr = "";
+      if (actualPaceSec && targetPaceSec) {
+        paceDiffSec = Math.round(actualPaceSec - targetPaceSec);
+        if (paceDiffSec < 0) {
+          paceDeltaStr = `${Math.abs(paceDiffSec)}s/mi faster than goal ⚡`;
+        } else if (paceDiffSec > 0) {
+          paceDeltaStr = `${paceDiffSec}s/mi slower than goal`;
+        } else {
+          paceDeltaStr = "Exact goal pace! 🎯";
+        }
+      } else if (targetPaceStr) {
+        paceDeltaStr = `Target: ${targetPaceStr}/mi`;
+      } else if (actualPaceSec) {
+        paceDeltaStr = `Avg pace: ${actualPaceStr}/mi`;
+      }
+
+      let statusClass = "upcoming";
+      let statusLabel = "Scheduled";
+      const todayYMD = getTodayYMD();
+      const isPast = dateYMD < todayYMD;
+      const isToday = dateYMD === todayYMD;
+
+      if (actualMiles > 0) {
+        if (targetMi > 0) {
+          const ratio = actualMiles / targetMi;
+          if (ratio >= 0.88) {
+            statusClass = "hit";
+            statusLabel = "Goal Completed ✓";
+          } else {
+            statusClass = "partial";
+            statusLabel = `${distPct}% of Dist`;
+          }
+        } else {
+          statusClass = "hit";
+          statusLabel = "Unscheduled Run ✓";
+        }
+      } else if (targetMi > 0) {
+        if (isPast) {
+          statusClass = "missed";
+          statusLabel = "Missed";
+        } else if (isToday) {
+          statusClass = "upcoming";
+          statusLabel = "Today's Goal";
+        } else {
+          statusClass = "upcoming";
+          statusLabel = "Upcoming";
+        }
+      } else {
+        statusClass = "rest";
+        statusLabel = "Rest Day";
+      }
+
+      return {
+        dateYMD,
+        dayName,
+        formattedDate,
+        fullDateFormatted,
+        isToday,
+        isPast,
+        runs,
+        runActivities,
+        actualMiles,
+        actualMovingSec,
+        actualElapsedSec,
+        actualPaceSec,
+        actualPaceStr,
+        totalElevation,
+        avgHeartRate,
+        planned,
+        weekNumber,
+        targetMi,
+        targetPaceStr,
+        targetPaceSec,
+        targetTimeSec,
+        targetTimeStr,
+        distDiff,
+        distPct,
+        paceDiffSec,
+        paceDeltaStr,
+        statusClass,
+        statusLabel
+      };
+    }
+
+    function buildDayTextSummary(d) {
+      const parts = [];
+      parts.push(`🏃 ShipShape Tracker • ${d.fullDateFormatted}`);
+      if (d.planned) {
+        const tgtPace = d.targetPaceStr ? ` @ ${d.targetPaceStr}/mi` : "";
+        parts.push(`🎯 Goal: ${d.targetMi.toFixed(1)} mi${tgtPace} (${d.planned.type || "Workout"})`);
+        if (d.planned.description) {
+          parts.push(`   Note: ${d.planned.description}`);
+        }
+      } else {
+        parts.push(`🎯 Goal: Rest / Recovery Day`);
+      }
+
+      if (d.actualMiles > 0) {
+        parts.push(`✅ Actual: ${d.actualMiles.toFixed(2)} mi @ ${d.actualPaceStr}/mi (${formatDuration(d.actualMovingSec)})`);
+        if (d.runActivities.length > 0 && d.runActivities[0].name) {
+          parts.push(`   Strava: "${d.runActivities[0].name}"`);
+        }
+        if (d.targetMi > 0) {
+          const sign = d.distDiff >= 0 ? "+" : "";
+          const pacePart = d.paceDeltaStr ? ` • ${d.paceDeltaStr}` : "";
+          parts.push(`📊 Delta: ${sign}${d.distDiff.toFixed(2)} mi (${d.distPct}%)${pacePart}`);
+        }
+      } else if (d.targetMi > 0) {
+        parts.push(`❌ Actual: 0.00 mi (${d.isPast ? "Missed" : "Not yet run"})`);
+      } else {
+        parts.push(`🛌 Actual: Rest Day`);
+      }
+
+      return parts.join("\n");
+    }
+
+    function drawRoundRectHelper(ctx, x, y, w, h, r) {
+      if (ctx.roundRect) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        return;
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawShipLogoCanvas(ctx, x, y, size) {
+      ctx.save();
+      ctx.translate(x, y);
+      const s = size / 64;
+      ctx.scale(s, s);
+
+      ctx.fillStyle = "#1e293b";
+      drawRoundRectHelper(ctx, 0, 0, 64, 64, 14);
+      ctx.fill();
+
+      ctx.fillStyle = "#ca2017";
+      ctx.beginPath();
+      ctx.moveTo(32, 10); ctx.lineTo(46, 21); ctx.lineTo(32, 23);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(31, 12); ctx.lineTo(31, 41); ctx.lineTo(14, 41);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#f1f5f9";
+      ctx.beginPath();
+      ctx.moveTo(33, 24); ctx.lineTo(49, 41); ctx.lineTo(33, 41);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#ca2017";
+      ctx.beginPath();
+      ctx.moveTo(10, 44); ctx.lineTo(54, 44); ctx.lineTo(48, 51); ctx.lineTo(16, 51);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(12, 55);
+      ctx.quadraticCurveTo(22, 51, 32, 55);
+      ctx.quadraticCurveTo(42, 59, 52, 55);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 2) {
+      if (!text) return y;
+      const words = String(text).split(" ");
+      let line = "";
+      let lineCount = 0;
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + " ";
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lineCount++;
+          if (lineCount >= maxLines) {
+            ctx.fillText(line.trim() + "...", x, y);
+            return y + lineHeight;
+          }
+          ctx.fillText(line.trim(), x, y);
+          line = words[n] + " ";
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, y);
+      return y + lineHeight;
+    }
+
+    function drawDayShareCard(canvas, d) {
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext("2d");
+
+      // Deep rich gradient background
+      const bg = ctx.createLinearGradient(0, 0, 1080, 1080);
+      bg.addColorStop(0, "#080d1a");
+      bg.addColorStop(0.5, "#0f172a");
+      bg.addColorStop(1, "#192438");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      // Top runner accent stripe
+      const stripe = ctx.createLinearGradient(0, 0, 1080, 0);
+      stripe.addColorStop(0, "#ca2017");
+      stripe.addColorStop(0.5, "#fc4c02");
+      stripe.addColorStop(1, "#f59e0b");
+      ctx.fillStyle = stripe;
+      ctx.fillRect(0, 0, 1080, 12);
+
+      // Outer Card Frame
+      drawRoundRectHelper(ctx, 48, 48, 984, 984, 28);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Header logo & branding
+      drawShipLogoCanvas(ctx, 84, 76, 56);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.fillText("SHIPSHAPE TRACKER", 154, 110);
+
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "600 20px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(`${d.dayName.toUpperCase()} • ${d.formattedDate.toUpperCase()}`, 154, 140);
+
+      // Status Pill
+      let badgeBg = "rgba(16, 185, 129, 0.2)";
+      let badgeBorder = "rgba(16, 185, 129, 0.5)";
+      let badgeText = "#34d399";
+      let badgeLabel = d.statusLabel.toUpperCase();
+
+      if (d.statusClass === "partial") {
+        badgeBg = "rgba(245, 158, 11, 0.2)";
+        badgeBorder = "rgba(245, 158, 11, 0.5)";
+        badgeText = "#fbbf24";
+      } else if (d.statusClass === "missed") {
+        badgeBg = "rgba(239, 68, 68, 0.2)";
+        badgeBorder = "rgba(239, 68, 68, 0.5)";
+        badgeText = "#f87171";
+      } else if (d.statusClass === "rest") {
+        badgeBg = "rgba(56, 189, 248, 0.2)";
+        badgeBorder = "rgba(56, 189, 248, 0.5)";
+        badgeText = "#38bdf8";
+      }
+
+      ctx.font = "bold 18px -apple-system, BlinkMacSystemFont, sans-serif";
+      const badgeWidth = Math.max(160, ctx.measureText(badgeLabel).width + 36);
+      const badgeX = 992 - badgeWidth;
+      drawRoundRectHelper(ctx, badgeX, 82, badgeWidth, 44, 22);
+      ctx.fillStyle = badgeBg;
+      ctx.fill();
+      ctx.strokeStyle = badgeBorder;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = badgeText;
+      ctx.textAlign = "center";
+      ctx.fillText(badgeLabel, badgeX + badgeWidth / 2, 110);
+      ctx.textAlign = "left";
+
+      // Workout Banner (y = 160)
+      drawRoundRectHelper(ctx, 84, 160, 912, 92, 16);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      drawRoundRectHelper(ctx, 84, 160, 6, 92, 3);
+      ctx.fillStyle = "#fc4c02";
+      ctx.fill();
+
+      ctx.font = "bold 16px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#fc4c02";
+      const typeLabel = d.planned ? (d.planned.type || "WORKOUT").toUpperCase() : "REST & RECOVERY";
+      ctx.fillText(typeLabel, 108, 190);
+
+      ctx.font = "bold 21px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#f8fafc";
+      const descText = d.planned ? d.planned.description : "No scheduled workout • Active recovery or rest";
+      wrapCanvasText(ctx, descText, 108, 222, 860, 26, 2);
+
+      // Hero Stat Cards (y = 276, h = 360)
+      // Left: ACTUAL
+      drawRoundRectHelper(ctx, 84, 276, 442, 360, 20);
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = "bold 17px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillText("ACTUAL PERFORMANCE", 112, 312);
+
+      ctx.font = "bold 78px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      const actDistStr = d.actualMiles.toFixed(2);
+      ctx.fillText(actDistStr, 112, 400);
+
+      const actDistWidth = ctx.measureText(actDistStr).width;
+      ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText(" MILES", 112 + actDistWidth, 400);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(112, 430);
+      ctx.lineTo(496, 430);
+      ctx.stroke();
+
+      ctx.font = "600 15px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("AVG PACE", 112, 465);
+      ctx.fillText("MOVING TIME", 310, 465);
+
+      ctx.font = "bold 30px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillText(`${d.actualPaceStr}/mi`, 112, 505);
+      ctx.fillText(formatDuration(d.actualMovingSec), 310, 505);
+
+      if (d.totalElevation || d.avgHeartRate) {
+        ctx.font = "16px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        const extraParts = [];
+        if (d.totalElevation) extraParts.push(`⛰️ ${Math.round(d.totalElevation * 3.28084)} ft elev`);
+        if (d.avgHeartRate) extraParts.push(`❤️ ${d.avgHeartRate} bpm`);
+        ctx.fillText(extraParts.join("   •   "), 112, 555);
+      }
+
+      // Right: GOAL / PLAN
+      drawRoundRectHelper(ctx, 554, 276, 442, 360, 20);
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.font = "bold 17px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("TRAINING PLAN GOAL", 582, 312);
+
+      ctx.font = "bold 78px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      const goalDistStr = d.targetMi > 0 ? d.targetMi.toFixed(1) : (d.planned ? "0" : "-");
+      ctx.fillText(goalDistStr, 582, 400);
+
+      const goalDistWidth = ctx.measureText(goalDistStr).width;
+      ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText(" MILES", 582 + goalDistWidth, 400);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(582, 430);
+      ctx.lineTo(966, 430);
+      ctx.stroke();
+
+      ctx.font = "600 15px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#94a3b8";
+      ctx.fillText("TARGET PACE", 582, 465);
+      ctx.fillText("EST. TIME", 780, 465);
+
+      ctx.font = "bold 30px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#f8fafc";
+      const tgtPaceDisplay = d.targetPaceStr ? `${d.targetPaceStr}/mi` : (d.planned ? "Easy Effort" : "Rest");
+      ctx.fillText(tgtPaceDisplay, 582, 505);
+      ctx.fillText(d.targetTimeStr || (d.targetMi > 0 ? "--:--" : "Rest"), 780, 505);
+
+      if (d.planned && d.planned.warmup_cooldown_mi) {
+        ctx.font = "16px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText("Includes +2.0 mi Warmup & Cooldown", 582, 555);
+      }
+
+      // Delta Highlight Banner (y = 660, h = 125)
+      let deltaBg = "rgba(16, 185, 129, 0.14)";
+      let deltaBorder = "rgba(16, 185, 129, 0.45)";
+      let deltaTextColor = "#34d399";
+      let deltaTitle = "🎯 GOAL COMPARISON";
+
+      if (d.statusClass === "partial") {
+        deltaBg = "rgba(245, 158, 11, 0.14)";
+        deltaBorder = "rgba(245, 158, 11, 0.45)";
+        deltaTextColor = "#fbbf24";
+      } else if (d.statusClass === "missed") {
+        deltaBg = "rgba(239, 68, 68, 0.14)";
+        deltaBorder = "rgba(239, 68, 68, 0.45)";
+        deltaTextColor = "#f87171";
+      } else if (d.statusClass === "rest") {
+        deltaBg = "rgba(56, 189, 248, 0.10)";
+        deltaBorder = "rgba(56, 189, 248, 0.35)";
+        deltaTextColor = "#38bdf8";
+        deltaTitle = "🛌 RECOVERY DAY";
+      }
+
+      drawRoundRectHelper(ctx, 84, 660, 912, 125, 20);
+      ctx.fillStyle = deltaBg;
+      ctx.fill();
+      ctx.strokeStyle = deltaBorder;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.font = "bold 16px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = deltaTextColor;
+      ctx.fillText(deltaTitle, 112, 695);
+
+      ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#ffffff";
+
+      let deltaSummaryText = "";
+      if (d.actualMiles > 0 && d.targetMi > 0) {
+        const sign = d.distDiff >= 0 ? "+" : "";
+        const pacePart = d.paceDeltaStr ? `   •   ${d.paceDeltaStr}` : "";
+        deltaSummaryText = `${sign}${d.distDiff.toFixed(2)} mi (${d.distPct}% of goal)${pacePart}`;
+      } else if (d.actualMiles > 0) {
+        deltaSummaryText = `+${d.actualMiles.toFixed(2)} mi logged   •   ${d.actualPaceStr}/mi avg pace`;
+      } else if (d.targetMi > 0) {
+        deltaSummaryText = d.isPast ? `Missed workout (${d.targetMi} mi goal)` : `Scheduled: ${d.targetMi} mi goal`;
+      } else {
+        deltaSummaryText = "Scheduled Rest Day   •   Recovery is Training";
+      }
+      ctx.fillText(deltaSummaryText, 112, 745);
+
+      // Strava Activity Banner (y = 810, h = 80)
+      drawRoundRectHelper(ctx, 84, 810, 912, 80, 16);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      drawRoundRectHelper(ctx, 108, 832, 86, 36, 18);
+      ctx.fillStyle = "#fc4c02";
+      ctx.fill();
+      ctx.font = "bold 14px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.fillText("STRAVA", 151, 855);
+      ctx.textAlign = "left";
+
+      ctx.font = "bold 20px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#f8fafc";
+      let actLine = "No Strava activity logged for this date";
+      if (d.runActivities.length > 0) {
+        const first = d.runActivities[0];
+        actLine = first.name ? `"${first.name}"` : "Strava Run";
+        if (d.runActivities.length > 1) {
+          actLine += ` (+${d.runActivities.length - 1} more)`;
+        }
+      }
+      ctx.fillText(actLine, 212, 856);
+
+      // Footer (y = 948)
+      ctx.font = "600 20px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#cbd5e1";
+      const athleteName = (appState.athlete && (appState.athlete.firstname || appState.athlete.lastname))
+        ? `${appState.athlete.firstname || ""} ${appState.athlete.lastname || ""}`.trim()
+        : "ShipShape Athlete";
+      ctx.fillText(`🏃 ${athleteName}`, 88, 948);
+
+      ctx.font = "500 18px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillStyle = "#64748b";
+      ctx.textAlign = "right";
+      ctx.fillText("ShipShape Marathon Tracker", 992, 948);
+      ctx.textAlign = "left";
+    }
+
+    function renderDayShareDialogContent(d) {
+      const title = document.getElementById("dayCardDialogTitle");
+      const sub = document.getElementById("dayCardDialogSub");
+      const metricsEl = document.getElementById("dayCardDialogMetrics");
+      const canvas = document.getElementById("dayShareCanvas");
+      const img = document.getElementById("dayShareImagePreview");
+      if (!title || !metricsEl || !canvas || !img) return;
+
+      canvas.dataset.dateYmd = d.dateYMD;
+
+      title.textContent = `🏃 ${d.dayName}, ${d.formattedDate}`;
+      sub.textContent = `${d.planned ? (d.planned.type || "Workout") : "Rest Day"} • ${d.statusLabel}`;
+
+      let deltaBorderColor = "rgba(16, 185, 129, 0.4)";
+      let deltaTextColor = "var(--green)";
+      let statusBadgeCls = "badge-green";
+      if (d.statusClass === "partial") {
+        deltaBorderColor = "rgba(245, 158, 11, 0.4)";
+        deltaTextColor = "var(--amber)";
+        statusBadgeCls = "badge-amber";
+      } else if (d.statusClass === "missed") {
+        deltaBorderColor = "rgba(239, 68, 68, 0.4)";
+        deltaTextColor = "var(--red)";
+        statusBadgeCls = "badge-red";
+      } else if (d.statusClass === "rest") {
+        deltaBorderColor = "rgba(56, 189, 248, 0.4)";
+        deltaTextColor = "var(--blue)";
+        statusBadgeCls = "badge-blue";
+      }
+
+      let deltaDistStr = "--";
+      if (d.actualMiles > 0 && d.targetMi > 0) {
+        deltaDistStr = `${d.distDiff >= 0 ? "+" : ""}${d.distDiff.toFixed(2)} mi (${d.distPct}%)`;
+      } else if (d.actualMiles > 0) {
+        deltaDistStr = `+${d.actualMiles.toFixed(2)} mi logged`;
+      } else if (d.targetMi > 0) {
+        deltaDistStr = d.isPast ? `Missed (${d.targetMi} mi)` : `Target: ${d.targetMi} mi`;
+      } else {
+        deltaDistStr = "Rest Day";
+      }
+
+      let runsHtml = "";
+      if (d.runActivities.length > 0) {
+        runsHtml = `
+          <div style="margin-top:0.75rem;">
+            <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.35rem;">Logged Strava Activities (${d.runActivities.length})</div>
+            ${buildRunItemsHtml(d.runActivities)}
+          </div>
+        `;
+      }
+
+      metricsEl.innerHTML = `
+        <div class="day-compare-grid">
+          <div class="day-compare-card">
+            <span class="stat-label">Goal / Planned</span>
+            <strong>${d.targetMi > 0 ? d.targetMi.toFixed(1) + " mi" : (d.planned ? "Workout" : "Rest Day")}</strong>
+            <span class="stat-sub">${d.targetPaceStr ? "Target: " + d.targetPaceStr + "/mi" : (d.planned ? "Easy pace" : "Recovery day")}</span>
+            <span class="stat-sub" style="font-weight:600; color:var(--text);">${escapeHtml(d.planned ? (d.planned.type || "Workout") : "Rest")}</span>
+          </div>
+          <div class="day-compare-card" style="border-color: rgba(56, 189, 248, 0.4);">
+            <span class="stat-label" style="color:var(--blue);">Actual Logged</span>
+            <strong style="color:var(--blue);">${d.actualMiles.toFixed(2)} mi</strong>
+            <span class="stat-sub">${d.actualPaceStr !== "--:--" ? "Avg: " + d.actualPaceStr + "/mi" : "No run logged"}</span>
+            <span class="stat-sub">${formatDuration(d.actualMovingSec)}${d.totalElevation ? ` • ⛰️ ${Math.round(d.totalElevation * 3.28084)} ft` : ""}</span>
+          </div>
+          <div class="day-compare-card" style="border-color:${deltaBorderColor};">
+            <span class="stat-label">Performance Delta</span>
+            <strong style="color:${deltaTextColor};">${deltaDistStr}</strong>
+            <span class="stat-sub" style="font-weight:600; color:${deltaTextColor};">${d.paceDeltaStr || d.statusLabel}</span>
+            <span class="badge ${statusBadgeCls}" style="align-self:flex-start; margin-top:0.2rem;">${d.statusLabel}</span>
+          </div>
+        </div>
+        ${d.planned ? `
+          <div style="background:var(--surface-subtle); border:1px solid var(--border); border-radius:8px; padding:0.65rem 0.85rem; font-size:0.82rem; margin-bottom:0.5rem;">
+            <strong style="color:var(--strava);">Planned Workout:</strong> ${escapeHtml(d.planned.description)}
+          </div>
+        ` : ""}
+        ${runsHtml}
+      `;
+
+      // Render high-res Canvas and export to preview Image
+      drawDayShareCard(canvas, d);
+      try {
+        img.src = canvas.toDataURL("image/png");
+      } catch (_) { }
+    }
+
+    window.openDayShareModal = function (dateYMD, event) {
+      if (event && event.target && event.target.closest("a, details, summary, select, input")) {
+        return;
+      }
+      const dialog = document.getElementById("dayCardDialog");
+      if (!dialog) return;
+
+      const data = getDayDetailData(dateYMD);
+      renderDayShareDialogContent(data);
+      dialog.showModal();
+    };
+
+    window.closeDayShareModal = function () {
+      const dialog = document.getElementById("dayCardDialog");
+      if (dialog) dialog.close();
+    };
+
+    window.saveDayCardToPhotos = async function () {
+      const canvas = document.getElementById("dayShareCanvas");
+      if (!canvas) return;
+      const dateYmd = canvas.dataset.dateYmd || "workout";
+      const filename = `shipshape-${dateYmd}.png`;
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], filename, { type: "image/png" });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: `ShipShape Workout - ${dateYmd}`,
+              text: `ShipShape Goal vs Actual: ${dateYmd}`
+            });
+            showDayShareToast("Share sheet opened! Tap 'Save Image' to store in Apple Photos.");
+            return;
+          } catch (err) {
+            if (err.name === "AbortError") return;
+          }
+        }
+
+        // Direct download fallback
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showDayShareToast(`Saved ${filename} to Downloads! On iPhone/iPad, long-press preview to save to Photos.`);
+      }, "image/png");
+    };
+
+    window.downloadDayCardImage = function () {
+      const canvas = document.getElementById("dayShareCanvas");
+      if (!canvas) return;
+      const dateYmd = canvas.dataset.dateYmd || "workout";
+      const filename = `shipshape-${dateYmd}.png`;
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showDayShareToast(`Downloaded ${filename} to your Downloads folder!`);
+      }, "image/png");
+    };
+
+    window.copyDayCardImage = async function () {
+      const canvas = document.getElementById("dayShareCanvas");
+      if (!canvas) return;
+      try {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          if (navigator.clipboard && window.ClipboardItem) {
+            await navigator.clipboard.write([
+              new ClipboardItem({ "image/png": blob })
+            ]);
+            showDayShareToast("Card image copied to clipboard! Paste into Messages or Instagram.");
+          } else {
+            showDayShareToast("Clipboard image copy not supported on this browser. Use Download instead.");
+          }
+        }, "image/png");
+      } catch (err) {
+        showDayShareToast("Could not copy image: " + err.message);
+      }
+    };
+
+    window.copyDayCardText = async function () {
+      const canvas = document.getElementById("dayShareCanvas");
+      const dateYmd = canvas ? canvas.dataset.dateYmd : "";
+      const data = getDayDetailData(dateYmd);
+      const text = buildDayTextSummary(data);
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          showDayShareToast("Text summary copied to clipboard!");
+        } else {
+          showDayShareToast("Clipboard access not available.");
+        }
+      } catch (err) {
+        showDayShareToast("Could not copy text: " + err.message);
+      }
+    };
+
+    function showDayShareToast(msg) {
+      const el = document.getElementById("dayShareToast");
+      if (!el) return;
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => {
+        el.style.display = "none";
+      }, 4500);
+    }
+
     async function triggerSync() {
       const btn = document.getElementById("btnSyncNow");
       if (btn) {
@@ -3926,6 +4842,12 @@
       const detailDialog = document.getElementById("activityDetailDialog");
       document.getElementById("btnCloseDetailDialog").addEventListener("click", () => detailDialog.close());
       detailDialog.addEventListener("click", (e) => { if (e.target === detailDialog) detailDialog.close(); });
+
+      const dayCardDialog = document.getElementById("dayCardDialog");
+      if (dayCardDialog) {
+        document.getElementById("btnCloseDayCardDialog").addEventListener("click", () => dayCardDialog.close());
+        dayCardDialog.addEventListener("click", (e) => { if (e.target === dayCardDialog) dayCardDialog.close(); });
+      }
 
       const res = await fetch("/api/state");
       const state = await res.json();
