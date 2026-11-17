@@ -4308,27 +4308,25 @@
       // 1. Distance
       let distSub = "";
       if (d.targetMi > 0) {
-        const sign = d.distDiff >= 0 ? "+" : "";
-        distSub = `Goal: ${d.targetMi.toFixed(1)} mi (${sign}${d.distDiff.toFixed(2)} mi)`;
+        distSub = `Goal: ${d.targetMi.toFixed(1)} mi`;
       }
       items.push({
         label: "Distance",
         value: `${d.actualMiles > 0 ? d.actualMiles.toFixed(2) : "0.00"} mi`,
         sub: distSub,
-        subColor: d.distDiff >= 0 ? "#34d399" : (d.distPct < 70 ? "#f87171" : "#fbbf24")
+        subColor: "#e2e8f0"
       });
 
       // 2. Pace
       let paceSub = "";
       if (d.targetPaceStr) {
-        const deltaPart = d.paceDeltaStr ? ` (${d.paceDeltaStr})` : "";
-        paceSub = `Goal: ${d.targetPaceStr}/mi${deltaPart}`;
+        paceSub = `Goal: ${d.targetPaceStr}/mi`;
       }
       items.push({
         label: "Pace",
         value: d.actualPaceStr !== "--:--" ? `${d.actualPaceStr} /mi` : "--:--",
         sub: paceSub,
-        subColor: (d.paceDiffSec !== null && d.paceDiffSec <= 0) ? "#34d399" : "#fbbf24"
+        subColor: "#e2e8f0"
       });
 
       // 3. Time
